@@ -330,4 +330,62 @@ describe("Sidebar Component", () => {
       expect(screen.queryByText(/Other/i)).not.toBeInTheDocument();
     });
   });
+
+  describe("Analyse Category Ordering", () => {
+    it("should render Requirements Constraints under Analyse directly below Requirements Breakdown", async () => {
+      const analysisPrompts = [
+        {
+          identifier: "requirements-constraints-volere-4a1b2c3d",
+          title: "Requirements Constraints",
+          categories: ["analysis"],
+          type: "cards",
+          show: true,
+        },
+        {
+          identifier: "epic-discussion-multistep-9456678f",
+          title: "Epic Discussion",
+          categories: ["analysis"],
+          type: "chat",
+          show: true,
+        },
+        {
+          identifier: "requirements-breakdown-3a845a85",
+          title: "Requirements Breakdown",
+          categories: ["analysis"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(
+          <Sidebar prompts={analysisPrompts} featureToggleConfig={{}} />,
+        );
+      });
+
+      const analyseCategory = screen.getByText(/Analyse/i);
+      await act(async () => {
+        analyseCategory.click();
+      });
+
+      const links = screen.getAllByRole("link");
+      const linkTexts = links.map((link) => link.textContent.trim());
+
+      const breakdownIdx = linkTexts.indexOf("Requirements Breakdown");
+      const constraintsIdx = linkTexts.indexOf("Requirements Constraints");
+
+      expect(breakdownIdx).toBeGreaterThan(-1);
+      expect(constraintsIdx).toBe(breakdownIdx + 1);
+      expect(
+        screen
+          .getByText("Requirements Constraints")
+          .closest("a")
+          .getAttribute("href"),
+      ).toBe("/cards?prompt=requirements-constraints-volere-4a1b2c3d");
+    });
+  });
 });

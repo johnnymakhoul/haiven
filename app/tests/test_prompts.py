@@ -448,3 +448,67 @@ class TestPromptList:
         assert (
             filtered_prompts[2]["identifier"] == "prompt-4"
         )  # Should be included (defaults to False)
+
+
+def test_volere_constraints_prompt_metadata_and_rendering():
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        volere_prompt = prompt_list.get("requirements-constraints-volere-4a1b2c3d")
+        assert volere_prompt is not None
+        assert volere_prompt.metadata["title"] == "Requirements Constraints"
+        assert volere_prompt.metadata["categories"] == ["analysis"]
+        assert volere_prompt.metadata["type"] == "cards"
+        assert volere_prompt.metadata["editable"] is True
+        assert prompt_list.produces_json_output(
+            "requirements-constraints-volere-4a1b2c3d"
+        )
+
+        rendered, template = prompt_list.render_prompt(
+            "requirements-constraints-volere-4a1b2c3d",
+            "Must integrate with legacy SAP and comply with GDPR.",
+            {"context": "European B2B CRM platform"},
+        )
+        assert "context" in template.input_variables
+        assert "user_input" in template.input_variables
+        assert "European B2B CRM platform" in rendered
+        assert "Must integrate with legacy SAP and comply with GDPR." in rendered
+        assert "volere_category" in rendered
+        assert "**Description**" in rendered
+        assert "**Rationale**" in rendered
+        assert "**Fit Criterion**" in rendered
+        assert "**Impact on Delivery**" in rendered
+        assert "self-review" in rendered
+
+        follow_ups = prompt_list.get_follow_ups(
+            "requirements-constraints-volere-4a1b2c3d"
+        )
+        assert len(follow_ups) >= 1
+        assert (
+            follow_ups[0]["identifier"]
+            == "requirements-constraints-volere-spec-8f9e1d2c"
+        )
+        assert follow_ups[0]["title"] == "Volere Constraints Specification Document"
+

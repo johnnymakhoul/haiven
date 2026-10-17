@@ -48,6 +48,25 @@ models:
       azure_deployment: ${AZURE_OPENAI_DEPLOYMENT_NAME_GPT4.1}
       api_key: ${AZURE_OPENAI_API_KEY}
 
+  - id: gemini-3.8-flash
+    name: Gemini 3.8 Flash
+    provider: GCP
+    features:
+      - text-generation
+      - image-to-text
+    config:
+      model: gemini-3.8-flash
+
+      
+  - id: gemini-3.5-flash
+    name: Gemini 3.5 Flash
+    provider: GCP
+    features:
+      - text-generation
+      - image-to-text
+    config:
+      model: gemini-3.5-flash
+      
   - id: gemini-3-flash-preview
     name: Gemini 3.0 Flash
     provider: GCP
