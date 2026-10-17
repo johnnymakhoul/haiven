@@ -738,5 +738,77 @@ def test_market_research_prompts_and_flows():
         assert "cost-analysis-tco-report-6f9d4a2b" in market_follow_ups
 
 
+def test_adr_prompts_and_flows():
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: Architecture Decision Records cards prompt
+        adr_cards = prompt_list.get("adr-cards-4f8a1c6e")
+        assert adr_cards is not None
+        assert adr_cards.metadata["title"] == "Architecture Decision Records"
+        assert adr_cards.metadata["categories"] == ["architecture"]
+        assert adr_cards.metadata["type"] == "cards"
+        assert adr_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output("adr-cards-4f8a1c6e")
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "adr-cards-4f8a1c6e",
+            "Decide between AKS microservices vs. modular monolith on Azure Container Apps under a €3k/mo OpEx ceiling.",
+            {"context": "B2B Field Sales Platform"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "B2B Field Sales Platform" in rendered_cards
+        assert "modular monolith on Azure Container Apps" in rendered_cards
+        assert "adr_domain" in rendered_cards
+        assert "status" in rendered_cards
+        assert "**Context & Problem**" in rendered_cards
+        assert "**Decision Drivers & Constraints**" in rendered_cards
+        assert "**Considered Options**" in rendered_cards
+        assert "**Recommended Decision & Rationale**" in rendered_cards
+        assert "**Consequences & Trade-offs**" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: ADR Specification Document (MADR) prompt
+        adr_spec = prompt_list.get("adr-madr-spec-5a9b2d7f")
+        assert adr_spec is not None
+        assert adr_spec.metadata["title"] == "ADR Specification Document (MADR)"
+        assert adr_spec.metadata["type"] == "chat"
+        assert adr_spec.metadata["show"] is False
+
+        # Verify follow-ups from ADR cards
+        adr_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("adr-cards-4f8a1c6e")
+        ]
+        assert "adr-madr-spec-5a9b2d7f" in adr_follow_ups
+        assert "cost-analysis-tco-report-6f9d4a2b" in adr_follow_ups
+        assert "togaf-gap-analysis-9d4a2b3e" in adr_follow_ups
+        assert "requirements-constraints-volere-spec-8f9e1d2c" in adr_follow_ups
+
+
+
 
 

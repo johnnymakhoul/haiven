@@ -496,5 +496,36 @@ describe("Sidebar Component", () => {
         "/cards?prompt=market-research-cards-2c7f4e9b",
       );
     });
+
+    it("should render Architecture Decision Records under Architecture", async () => {
+      const adrPrompts = [
+        {
+          identifier: "adr-cards-4f8a1c6e",
+          title: "Architecture Decision Records",
+          categories: ["architecture"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={adrPrompts} featureToggleConfig={{}} />);
+      });
+
+      const architectureCategory = screen.getByText(/Architecture/i);
+      await act(async () => {
+        architectureCategory.click();
+      });
+
+      const adrLinks = screen.getAllByText("Architecture Decision Records");
+      expect(adrLinks.length).toBeGreaterThanOrEqual(1);
+      expect(adrLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=adr-cards-4f8a1c6e",
+      );
+    });
   });
 });
