@@ -9,6 +9,7 @@
     identifier: requirements-constraints-volere-4a1b2c3d
   followUps:
     - identifier: requirements-constraints-volere-spec-8f9e1d2c
+    - identifier: adr-madr-spec-5a9b2d7f
     - identifier: cost-analysis-tco-report-6f9d4a2b
     - identifier: togaf-gap-analysis-9d4a2b3e
     - identifier: epic-discussion-multistep-9456678f
@@ -23,11 +24,20 @@
   followUps:
     - identifier: togaf-baseline-dossier-8c3f1e2a
     - identifier: togaf-gap-analysis-9d4a2b3e
+    - identifier: adr-madr-spec-5a9b2d7f
     - identifier: cost-analysis-tco-report-6f9d4a2b
     - identifier: requirements-constraints-volere-spec-8f9e1d2c
 - firstStep:
     identifier: cost-analysis-cards-5e8b3c1a
   followUps:
     - identifier: cost-analysis-tco-report-6f9d4a2b
+    - identifier: adr-madr-spec-5a9b2d7f
     - identifier: requirements-constraints-volere-spec-8f9e1d2c
     - identifier: togaf-gap-analysis-9d4a2b3e
+- firstStep:
+    identifier: adr-cards-4f8a1c6e
+  followUps:
+    - identifier: adr-madr-spec-5a9b2d7f
+    - identifier: cost-analysis-tco-report-6f9d4a2b
+    - identifier: togaf-gap-analysis-9d4a2b3e
+    - identifier: requirements-constraints-volere-spec-8f9e1d2c
