@@ -527,5 +527,41 @@ describe("Sidebar Component", () => {
         "/cards?prompt=adr-cards-4f8a1c6e",
       );
     });
+
+    it("should render Schedule Estimation & Planning under Analyse and Architecture", async () => {
+      const schedulePrompts = [
+        {
+          identifier: "schedule-estimation-cards-6b1d3e8f",
+          title: "Schedule Estimation & Planning",
+          categories: ["analysis", "architecture"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(
+          <Sidebar prompts={schedulePrompts} featureToggleConfig={{}} />,
+        );
+      });
+
+      const analyseCategory = screen.getByText(/Analyse/i);
+      await act(async () => {
+        analyseCategory.click();
+      });
+
+      const scheduleLinks = screen.getAllByText(
+        "Schedule Estimation & Planning",
+      );
+      expect(scheduleLinks.length).toBeGreaterThanOrEqual(1);
+      expect(scheduleLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=schedule-estimation-cards-6b1d3e8f",
+      );
+    });
   });
 });
+
