@@ -387,5 +387,45 @@ describe("Sidebar Component", () => {
           .getAttribute("href"),
       ).toBe("/cards?prompt=requirements-constraints-volere-4a1b2c3d");
     });
+
+    it("should render Baseline Architecture Assessment under Architecture and Analyse", async () => {
+      const togafPrompts = [
+        {
+          identifier: "togaf-baseline-assessment-cards-7b2e9a1c",
+          title: "Baseline Architecture Assessment",
+          categories: ["architecture", "analysis"],
+          type: "cards",
+          show: true,
+        },
+        {
+          identifier: "threat-modelling-cdbaba6f",
+          title: "Threat Modelling: STRIDE",
+          categories: ["architecture"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={togafPrompts} featureToggleConfig={{}} />);
+      });
+
+      const architectureCategory = screen.getByText(/Architecture/i);
+      await act(async () => {
+        architectureCategory.click();
+      });
+
+      const togafLinks = screen.getAllByText(
+        "Baseline Architecture Assessment",
+      );
+      expect(togafLinks.length).toBeGreaterThanOrEqual(1);
+      expect(togafLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=togaf-baseline-assessment-cards-7b2e9a1c",
+      );
+    });
   });
 });
