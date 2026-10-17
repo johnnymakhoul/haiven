@@ -881,7 +881,85 @@ def test_schedule_estimation_prompts_and_flows():
         ]
         assert "schedule-roadmap-report-7c2e4f9a" in schedule_follow_ups
         assert "cost-analysis-tco-report-6f9d4a2b" in schedule_follow_ups
+        assert "legal-contracts-report-9e4a6b2d" in schedule_follow_ups
         assert "adr-madr-spec-5a9b2d7f" in schedule_follow_ups
         assert "requirements-constraints-volere-spec-8f9e1d2c" in schedule_follow_ups
         assert "togaf-gap-analysis-9d4a2b3e" in schedule_follow_ups
 
+
+def test_legal_contracts_prompts_and_flows():
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: Legal & Contracts cards prompt
+        legal_cards = prompt_list.get("legal-contracts-cards-8d3f5a1c")
+        assert legal_cards is not None
+        assert legal_cards.metadata["title"] == "Legal & Contracts"
+        assert legal_cards.metadata["categories"] == ["analysis", "architecture"]
+        assert legal_cards.metadata["type"] == "cards"
+        assert legal_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output("legal-contracts-cards-8d3f5a1c")
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "legal-contracts-cards-8d3f5a1c",
+            "EU customer PII processed on AWS eu-central-1 with external US LLM sub-processor and 99.9% SLA.",
+            {"context": "European B2B Order Platform"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "European B2B Order Platform" in rendered_cards
+        assert (
+            "EU customer PII processed on AWS eu-central-1 with external US LLM sub-processor and 99.9% SLA."
+            in rendered_cards
+        )
+        assert "legal_category" in rendered_cards
+        assert "risk_severity_and_status" in rendered_cards
+        assert "**Contractual / Regulatory Requirement**" in rendered_cards
+        assert "**Architecture & Delivery Impact**" in rendered_cards
+        assert "**Identified Exposure / Gap**" in rendered_cards
+        assert "**Recommended Redline / Technical Control**" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: Legal, Regulatory & Contract Compliance Report prompt
+        legal_report = prompt_list.get("legal-contracts-report-9e4a6b2d")
+        assert legal_report is not None
+        assert (
+            legal_report.metadata["title"]
+            == "Legal, Regulatory & Contract Compliance Report"
+        )
+        assert legal_report.metadata["type"] == "chat"
+        assert legal_report.metadata["show"] is False
+
+        # Verify follow-ups from Legal & Contracts cards
+        legal_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("legal-contracts-cards-8d3f5a1c")
+        ]
+        assert "legal-contracts-report-9e4a6b2d" in legal_follow_ups
+        assert "requirements-constraints-volere-spec-8f9e1d2c" in legal_follow_ups
+        assert "adr-madr-spec-5a9b2d7f" in legal_follow_ups
+        assert "cost-analysis-tco-report-6f9d4a2b" in legal_follow_ups
+        assert "schedule-roadmap-report-7c2e4f9a" in legal_follow_ups
+        assert "togaf-gap-analysis-9d4a2b3e" in legal_follow_ups

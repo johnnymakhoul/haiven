@@ -562,6 +562,36 @@ describe("Sidebar Component", () => {
         "/cards?prompt=schedule-estimation-cards-6b1d3e8f",
       );
     });
+
+    it("should render Legal & Contracts under Analyse and Architecture", async () => {
+      const legalPrompts = [
+        {
+          identifier: "legal-contracts-cards-8d3f5a1c",
+          title: "Legal & Contracts",
+          categories: ["analysis", "architecture"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={legalPrompts} featureToggleConfig={{}} />);
+      });
+
+      const analyseCategory = screen.getByText(/Analyse/i);
+      await act(async () => {
+        analyseCategory.click();
+      });
+
+      const legalLinks = screen.getAllByText("Legal & Contracts");
+      expect(legalLinks.length).toBeGreaterThanOrEqual(1);
+      expect(legalLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=legal-contracts-cards-8d3f5a1c",
+      );
+    });
   });
 });
-
