@@ -5,10 +5,12 @@
     - identifier: epic-discussion-multistep-9456678f
     - identifier: requirements-constraints-volere-spec-8f9e1d2c
     - identifier: cost-analysis-tco-report-6f9d4a2b
+    - identifier: legal-contracts-report-9e4a6b2d
 - firstStep:
     identifier: requirements-constraints-volere-4a1b2c3d
   followUps:
     - identifier: requirements-constraints-volere-spec-8f9e1d2c
+    - identifier: legal-contracts-report-9e4a6b2d
     - identifier: schedule-roadmap-report-7c2e4f9a
     - identifier: adr-madr-spec-5a9b2d7f
     - identifier: cost-analysis-tco-report-6f9d4a2b
@@ -19,6 +21,7 @@
   followUps:
     - identifier: schedule-roadmap-report-7c2e4f9a
     - identifier: cost-analysis-tco-report-6f9d4a2b
+    - identifier: legal-contracts-report-9e4a6b2d
     - identifier: requirements-constraints-volere-spec-8f9e1d2c
     - identifier: epic-discussion-multistep-9456678f
 - firstStep:
@@ -26,6 +29,7 @@
   followUps:
     - identifier: togaf-baseline-dossier-8c3f1e2a
     - identifier: togaf-gap-analysis-9d4a2b3e
+    - identifier: legal-contracts-report-9e4a6b2d
     - identifier: schedule-roadmap-report-7c2e4f9a
     - identifier: adr-madr-spec-5a9b2d7f
     - identifier: cost-analysis-tco-report-6f9d4a2b
@@ -34,6 +38,7 @@
     identifier: cost-analysis-cards-5e8b3c1a
   followUps:
     - identifier: cost-analysis-tco-report-6f9d4a2b
+    - identifier: legal-contracts-report-9e4a6b2d
     - identifier: schedule-roadmap-report-7c2e4f9a
     - identifier: adr-madr-spec-5a9b2d7f
     - identifier: requirements-constraints-volere-spec-8f9e1d2c
@@ -42,6 +47,7 @@
     identifier: adr-cards-4f8a1c6e
   followUps:
     - identifier: adr-madr-spec-5a9b2d7f
+    - identifier: legal-contracts-report-9e4a6b2d
     - identifier: schedule-roadmap-report-7c2e4f9a
     - identifier: cost-analysis-tco-report-6f9d4a2b
     - identifier: togaf-gap-analysis-9d4a2b3e
@@ -51,6 +57,16 @@
   followUps:
     - identifier: schedule-roadmap-report-7c2e4f9a
     - identifier: cost-analysis-tco-report-6f9d4a2b
+    - identifier: legal-contracts-report-9e4a6b2d
     - identifier: adr-madr-spec-5a9b2d7f
     - identifier: requirements-constraints-volere-spec-8f9e1d2c
+    - identifier: togaf-gap-analysis-9d4a2b3e
+- firstStep:
+    identifier: legal-contracts-cards-8d3f5a1c
+  followUps:
+    - identifier: legal-contracts-report-9e4a6b2d
+    - identifier: requirements-constraints-volere-spec-8f9e1d2c
+    - identifier: adr-madr-spec-5a9b2d7f
+    - identifier: cost-analysis-tco-report-6f9d4a2b
+    - identifier: schedule-roadmap-report-7c2e4f9a
     - identifier: togaf-gap-analysis-9d4a2b3e
