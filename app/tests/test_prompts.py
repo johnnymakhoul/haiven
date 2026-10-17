@@ -512,3 +512,82 @@ def test_volere_constraints_prompt_metadata_and_rendering():
         )
         assert follow_ups[0]["title"] == "Volere Constraints Specification Document"
 
+
+def test_togaf_baseline_assessment_prompts_and_flows():
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: Cards prompt
+        togaf_cards = prompt_list.get("togaf-baseline-assessment-cards-7b2e9a1c")
+        assert togaf_cards is not None
+        assert togaf_cards.metadata["title"] == "Baseline Architecture Assessment"
+        assert togaf_cards.metadata["categories"] == ["architecture", "analysis"]
+        assert togaf_cards.metadata["type"] == "cards"
+        assert togaf_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output(
+            "togaf-baseline-assessment-cards-7b2e9a1c"
+        )
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "togaf-baseline-assessment-cards-7b2e9a1c",
+            "Legacy Java monolith with nightly CSV sync from SAP.",
+            {"context": "B2B Order Management System"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "B2B Order Management System" in rendered_cards
+        assert "Legacy Java monolith with nightly CSV sync from SAP." in rendered_cards
+        assert "togaf_phase" in rendered_cards
+        assert "pain_points" in rendered_cards
+        assert "criticality_and_debt" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: Report prompt
+        dossier_prompt = prompt_list.get("togaf-baseline-dossier-8c3f1e2a")
+        assert dossier_prompt is not None
+        assert (
+            dossier_prompt.metadata["title"]
+            == "Baseline Architecture Assessment Report"
+        )
+        assert dossier_prompt.metadata["type"] == "chat"
+        assert dossier_prompt.metadata["show"] is False
+
+        # Step 3: Gap Analysis prompt
+        gap_prompt = prompt_list.get("togaf-gap-analysis-9d4a2b3e")
+        assert gap_prompt is not None
+        assert gap_prompt.metadata["title"] == "TOGAF Gap Analysis & Modernization Options"
+        assert gap_prompt.metadata["type"] == "chat"
+        assert gap_prompt.metadata["show"] is False
+
+        # Verify 3-step follow-up flow
+        follow_ups = prompt_list.get_follow_ups(
+            "togaf-baseline-assessment-cards-7b2e9a1c"
+        )
+        follow_up_ids = [f["identifier"] for f in follow_ups]
+        assert "togaf-baseline-dossier-8c3f1e2a" in follow_up_ids
+        assert "togaf-gap-analysis-9d4a2b3e" in follow_up_ids
+        assert "requirements-constraints-volere-spec-8f9e1d2c" in follow_up_ids
+
+
