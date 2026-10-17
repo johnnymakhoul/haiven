@@ -804,11 +804,84 @@ def test_adr_prompts_and_flows():
             for f in prompt_list.get_follow_ups("adr-cards-4f8a1c6e")
         ]
         assert "adr-madr-spec-5a9b2d7f" in adr_follow_ups
+        assert "schedule-roadmap-report-7c2e4f9a" in adr_follow_ups
         assert "cost-analysis-tco-report-6f9d4a2b" in adr_follow_ups
         assert "togaf-gap-analysis-9d4a2b3e" in adr_follow_ups
         assert "requirements-constraints-volere-spec-8f9e1d2c" in adr_follow_ups
 
 
+def test_schedule_estimation_prompts_and_flows():
+    import os
+    import tempfile
+    import shutil
 
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
 
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: Schedule Estimation & Planning cards prompt
+        schedule_cards = prompt_list.get("schedule-estimation-cards-6b1d3e8f")
+        assert schedule_cards is not None
+        assert schedule_cards.metadata["title"] == "Schedule Estimation & Planning"
+        assert schedule_cards.metadata["categories"] == ["analysis", "architecture"]
+        assert schedule_cards.metadata["type"] == "cards"
+        assert schedule_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output("schedule-estimation-cards-6b1d3e8f")
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "schedule-estimation-cards-6b1d3e8f",
+            "Deliver cloud-native Customer Order Portal within 6 months with 2 squads.",
+            {"context": "Legacy Monolith Replacement"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "Legacy Monolith Replacement" in rendered_cards
+        assert (
+            "Deliver cloud-native Customer Order Portal within 6 months with 2 squads."
+            in rendered_cards
+        )
+        assert "delivery_phase" in rendered_cards
+        assert "scope_and_deliverables" in rendered_cards
+        assert "effort_estimate" in rendered_cards
+        assert "dependencies_and_critical_path" in rendered_cards
+        assert "schedule_risks_and_buffers" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: Delivery Roadmap & Schedule Estimation Report prompt
+        roadmap_report = prompt_list.get("schedule-roadmap-report-7c2e4f9a")
+        assert roadmap_report is not None
+        assert (
+            roadmap_report.metadata["title"]
+            == "Delivery Roadmap & Schedule Estimation Report"
+        )
+        assert roadmap_report.metadata["type"] == "chat"
+        assert roadmap_report.metadata["show"] is False
+
+        # Verify follow-ups from Schedule Estimation cards
+        schedule_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("schedule-estimation-cards-6b1d3e8f")
+        ]
+        assert "schedule-roadmap-report-7c2e4f9a" in schedule_follow_ups
+        assert "cost-analysis-tco-report-6f9d4a2b" in schedule_follow_ups
+        assert "adr-madr-spec-5a9b2d7f" in schedule_follow_ups
+        assert "requirements-constraints-volere-spec-8f9e1d2c" in schedule_follow_ups
+        assert "togaf-gap-analysis-9d4a2b3e" in schedule_follow_ups
 
