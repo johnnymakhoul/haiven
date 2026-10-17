@@ -465,5 +465,36 @@ describe("Sidebar Component", () => {
         "/cards?prompt=cost-analysis-cards-5e8b3c1a",
       );
     });
+
+    it("should render Market Research under Research and Analyse", async () => {
+      const marketPrompts = [
+        {
+          identifier: "market-research-cards-2c7f4e9b",
+          title: "Market Research",
+          categories: ["research", "analysis"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={marketPrompts} featureToggleConfig={{}} />);
+      });
+
+      const researchCategory = screen.getByText(/Research/i);
+      await act(async () => {
+        researchCategory.click();
+      });
+
+      const marketLinks = screen.getAllByText("Market Research");
+      expect(marketLinks.length).toBeGreaterThanOrEqual(1);
+      expect(marketLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=market-research-cards-2c7f4e9b",
+      );
+    });
   });
 });

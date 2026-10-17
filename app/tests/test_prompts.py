@@ -660,4 +660,83 @@ def test_cost_analysis_prompts_and_flows():
         assert "togaf-gap-analysis-9d4a2b3e" in cost_follow_ups
 
 
+def test_market_research_prompts_and_flows():
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: Market Research cards prompt
+        market_cards = prompt_list.get("market-research-cards-2c7f4e9b")
+        assert market_cards is not None
+        assert market_cards.metadata["title"] == "Market Research"
+        assert market_cards.metadata["categories"] == ["research", "analysis"]
+        assert market_cards.metadata["type"] == "cards"
+        assert market_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output("market-research-cards-2c7f4e9b")
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "market-research-cards-2c7f4e9b",
+            "Mobile field sales CRM for European food & beverage wholesale distributors.",
+            {"context": "B2B Wholesale Distribution"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "B2B Wholesale Distribution" in rendered_cards
+        assert (
+            "Mobile field sales CRM for European food & beverage wholesale distributors."
+            in rendered_cards
+        )
+        assert "research_dimension" in rendered_cards
+        assert "Target Users & Personas" in rendered_cards
+        assert "User Needs & Pain Points" in rendered_cards
+        assert "Available Market Solutions" in rendered_cards
+        assert "Competitive Landscape (Concurrence)" in rendered_cards
+        assert "**Overview**" in rendered_cards
+        assert "**Current Market Reality & Strengths**" in rendered_cards
+        assert "**Gaps, Weaknesses & Friction**" in rendered_cards
+        assert "**Strategic Implication for Our Product**" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: Market Research & Competitive Analysis Report prompt
+        market_report = prompt_list.get("market-research-report-3d8a5b1e")
+        assert market_report is not None
+        assert (
+            market_report.metadata["title"]
+            == "Market Research & Competitive Analysis Report"
+        )
+        assert market_report.metadata["type"] == "chat"
+        assert market_report.metadata["show"] is False
+
+        # Verify follow-ups from Market Research
+        market_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("market-research-cards-2c7f4e9b")
+        ]
+        assert "market-research-report-3d8a5b1e" in market_follow_ups
+        assert "requirements-constraints-volere-spec-8f9e1d2c" in market_follow_ups
+        assert "cost-analysis-tco-report-6f9d4a2b" in market_follow_ups
+
+
+
 
