@@ -427,5 +427,43 @@ describe("Sidebar Component", () => {
         "/cards?prompt=togaf-baseline-assessment-cards-7b2e9a1c",
       );
     });
+
+    it("should render Cost Analysis under Analyse and Architecture", async () => {
+      const costPrompts = [
+        {
+          identifier: "cost-analysis-cards-5e8b3c1a",
+          title: "Cost Analysis",
+          categories: ["analysis", "architecture"],
+          type: "cards",
+          show: true,
+        },
+        {
+          identifier: "requirements-constraints-volere-4a1b2c3d",
+          title: "Requirements Constraints",
+          categories: ["analysis"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={costPrompts} featureToggleConfig={{}} />);
+      });
+
+      const analyseCategory = screen.getByText(/Analyse/i);
+      await act(async () => {
+        analyseCategory.click();
+      });
+
+      const costLinks = screen.getAllByText("Cost Analysis");
+      expect(costLinks.length).toBeGreaterThanOrEqual(1);
+      expect(costLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=cost-analysis-cards-5e8b3c1a",
+      );
+    });
   });
 });

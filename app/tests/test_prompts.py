@@ -591,3 +591,73 @@ def test_togaf_baseline_assessment_prompts_and_flows():
         assert "requirements-constraints-volere-spec-8f9e1d2c" in follow_up_ids
 
 
+def test_cost_analysis_prompts_and_flows():
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: Cost Analysis cards prompt
+        cost_cards = prompt_list.get("cost-analysis-cards-5e8b3c1a")
+        assert cost_cards is not None
+        assert cost_cards.metadata["title"] == "Cost Analysis"
+        assert cost_cards.metadata["categories"] == ["analysis", "architecture"]
+        assert cost_cards.metadata["type"] == "cards"
+        assert cost_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output("cost-analysis-cards-5e8b3c1a")
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "cost-analysis-cards-5e8b3c1a",
+            "Requirements: offline sync. Constraints: €3k/mo OpEx ceiling. Chosen Solution: React PWA + AKS + Multi-AZ Postgres.",
+            {"context": "B2B Field Sales CRM"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "B2B Field Sales CRM" in rendered_cards
+        assert "Chosen Solution: React PWA + AKS + Multi-AZ Postgres." in rendered_cards
+        assert "cost_category" in rendered_cards
+        assert "source_driver" in rendered_cards
+        assert "**Cost Breakdown & Sizing**" in rendered_cards
+        assert "**Assumptions**" in rendered_cards
+        assert "**Budget & Constraint Impact**" in rendered_cards
+        assert "**Optimization / Trade-off Lever**" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: TCO & Budget Alignment Report prompt
+        tco_report = prompt_list.get("cost-analysis-tco-report-6f9d4a2b")
+        assert tco_report is not None
+        assert tco_report.metadata["title"] == "TCO & Budget Alignment Report"
+        assert tco_report.metadata["type"] == "chat"
+        assert tco_report.metadata["show"] is False
+
+        # Verify follow-ups from Cost Analysis and upstream prompts
+        cost_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("cost-analysis-cards-5e8b3c1a")
+        ]
+        assert "cost-analysis-tco-report-6f9d4a2b" in cost_follow_ups
+        assert "requirements-constraints-volere-spec-8f9e1d2c" in cost_follow_ups
+        assert "togaf-gap-analysis-9d4a2b3e" in cost_follow_ups
+
+
+
