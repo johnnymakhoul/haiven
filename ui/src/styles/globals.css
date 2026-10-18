@@ -1687,8 +1687,56 @@ a.feedback:hover {
 
 /******* SIDEBAR ******/
 
+.sidebar-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.project-selector-container {
+  padding: 12px 12px 8px 12px;
+  border-bottom: 1px solid var(--color-medium-gray);
+  background-color: var(--color-light-gray);
+}
+
+.project-selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.project-selector-title {
+  font-size: 12px;
+  font-weight: var(--font-weight-semi-bold);
+  color: var(--color-dark-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.project-selector-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.project-action-btn {
+  padding: 0 4px !important;
+  height: 22px !important;
+  font-size: 12px !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.ant-layout-sider-collapsed .project-selector-container {
+  display: none;
+}
+
 .sidebar {
   height: 100%;
+  flex: 1;
   padding-top: 10px;
   overflow: auto;
 }

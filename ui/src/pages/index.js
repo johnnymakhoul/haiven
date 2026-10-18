@@ -15,7 +15,7 @@ import DisclaimerPopup from "../app/_disclaimer_popup";
 import { RiBookShelfLine } from "react-icons/ri";
 import { MdLightbulb } from "react-icons/md";
 import ReactMarkdown from "react-markdown";
-import { initializeLocalStorage } from "../app/_local_store";
+import { initializeLocalStorage, getActiveProject } from "../app/_local_store";
 import { FEATURES, getFeatureTogglesAsJson } from "../app/feature_toggle";
 
 export default function ChatDashboard() {
@@ -26,6 +26,9 @@ export default function ChatDashboard() {
   const [disclaimerConfig, setDisclaimerConfig] = useState({});
   const [inspirations, setInspirations] = useState([]);
   const [featureToggleConfig, setFeatureToggleConfig] = useState({});
+  const [activeProject, setActiveProject] = useState(() =>
+    typeof getActiveProject === "function" ? getActiveProject() : null,
+  );
 
   // !! If changed, also needs to be changed in CSS, for the filter selection colors
   const categoryColors = {
@@ -77,6 +80,18 @@ export default function ChatDashboard() {
     getFeatureTogglesAsJson().then((data) => {
       setFeatureToggleConfig(data || {});
     });
+
+    const handleProjectUpdate = () => {
+      if (typeof getActiveProject === "function") {
+        setActiveProject(getActiveProject());
+      }
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("update-project", handleProjectUpdate);
+      return () => {
+        window.removeEventListener("update-project", handleProjectUpdate);
+      };
+    }
   }, []);
 
   useEffect(() => {
@@ -99,10 +114,17 @@ export default function ChatDashboard() {
     const activeCategories = Object.keys(
       initialiseMenuCategoriesForSidebar(
         featureToggleConfig[FEATURES.THOUGHTWORKS] === true,
+        activeProject?.sections,
       ),
     );
 
     getPrompts((data) => {
+      const staticFeatures = staticFeaturesForDashboard().filter((feature) =>
+        feature.categories.some((category) =>
+          activeCategories.includes(category),
+        ),
+      );
+
       data = data
         .filter((prompt) => prompt.show !== false)
         .filter((prompt) => {
@@ -117,7 +139,7 @@ export default function ChatDashboard() {
           return prompt;
         });
       // add the "static" features
-      data = data.concat(staticFeaturesForDashboard());
+      data = data.concat(staticFeatures);
 
       data.forEach((prompt) => {
         sortCategoriesByOrder(prompt.categories);
@@ -144,7 +166,13 @@ export default function ChatDashboard() {
       const categories = [
         ...new Set(data.flatMap((prompt) => prompt.categories)),
       ];
-      categories.push("other");
+      if (
+        (!activeProject?.sections ||
+          activeProject.sections.includes("other")) &&
+        !categories.includes("other")
+      ) {
+        categories.push("other");
+      }
 
       sortCategoriesByOrder(categories);
       setAllCategories(categories);
@@ -154,7 +182,7 @@ export default function ChatDashboard() {
     getInspirations((data) => {
       setInspirations(data);
     });
-  }, [featureToggleConfig]);
+  }, [featureToggleConfig, activeProject]);
 
   useEffect(() => {
     if (selectedCategories.length === 0) {

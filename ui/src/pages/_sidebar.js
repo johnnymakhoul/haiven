@@ -7,8 +7,11 @@ import { RiGlobalLine } from "react-icons/ri";
 import {
   initialiseMenuCategoriesForSidebar,
   THOUGHTWORKS_ONLY_CATEGORIES,
+  SOFTWARE_DELIVERY_CATEGORIES,
 } from "../app/_navigation_items";
 import { FEATURES } from "../app/feature_toggle";
+import { getActiveProject } from "../app/_local_store";
+import ProjectSelector from "../app/_project_selector";
 
 const Sidebar = ({ prompts, featureToggleConfig }) => {
   const pathToKey = {
@@ -21,6 +24,7 @@ const Sidebar = ({ prompts, featureToggleConfig }) => {
   const currentSelectedKey = pathToKey[router.pathname];
 
   const [menuItems, setMenuItems] = useState([]);
+  const [activeProject, setActiveProject] = useState(() => getActiveProject());
 
   const typeToUrlMap = {
     chat: "/chat",
@@ -28,10 +32,23 @@ const Sidebar = ({ prompts, featureToggleConfig }) => {
   };
 
   useEffect(() => {
+    const handleProjectUpdate = () => {
+      setActiveProject(getActiveProject());
+    };
+    if (typeof window !== "undefined") {
+      window.addEventListener("update-project", handleProjectUpdate);
+      return () => {
+        window.removeEventListener("update-project", handleProjectUpdate);
+      };
+    }
+  }, []);
+
+  useEffect(() => {
     const isThoughtworksInstance =
       featureToggleConfig[FEATURES.THOUGHTWORKS] === true;
     const menuCategories = initialiseMenuCategoriesForSidebar(
       isThoughtworksInstance,
+      activeProject?.sections,
     );
 
     prompts
@@ -56,10 +73,21 @@ const Sidebar = ({ prompts, featureToggleConfig }) => {
           ) {
             return;
           }
+          // If a known software delivery section is disabled in the active project, do not fall back to "Other"
+          if (
+            SOFTWARE_DELIVERY_CATEGORIES.includes(category) &&
+            !menuCategories[category]
+          ) {
+            return;
+          }
           const menuCategory =
             menuCategories[category] || menuCategories["other"];
-          // Skip if this is a group or divider type category
-          if (menuCategory.type === "divider" || menuCategory.type === "group")
+          // Skip if this is a group or divider type category or if "other" is disabled
+          if (
+            !menuCategory ||
+            menuCategory.type === "divider" ||
+            menuCategory.type === "group"
+          )
             return;
 
           menuCategory.children.push({
@@ -111,16 +139,19 @@ const Sidebar = ({ prompts, featureToggleConfig }) => {
     });
 
     setMenuItems(finalMenuItems);
-  }, [prompts]);
+  }, [prompts, featureToggleConfig, activeProject]);
 
   return (
-    <Menu
-      theme="light"
-      mode="inline"
-      className="sidebar"
-      items={menuItems}
-      defaultSelectedKeys={[currentSelectedKey]}
-    ></Menu>
+    <div className="sidebar-wrapper">
+      <ProjectSelector onProjectChange={setActiveProject} />
+      <Menu
+        theme="light"
+        mode="inline"
+        className="sidebar"
+        items={menuItems}
+        defaultSelectedKeys={[currentSelectedKey]}
+      ></Menu>
+    </div>
   );
 };
 
