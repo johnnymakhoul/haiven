@@ -1,9 +1,10 @@
 // © 2024 Thoughtworks, Inc. | Licensed under the Apache License, Version 2.0  | See LICENSE.md file for permissions.
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { act } from "react";
 import Sidebar from "../pages/_sidebar";
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { useRouter } from "next/router";
+import { addProject, setActiveProject } from "../app/_local_store";
 
 vi.mock("next/router", () => ({
   useRouter: vi.fn(),
@@ -12,6 +13,7 @@ vi.mock("next/router", () => ({
 describe("Sidebar Component", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.clear();
   });
 
   const mockPrompts = [
@@ -592,6 +594,90 @@ describe("Sidebar Component", () => {
       expect(legalLinks[0].closest("a").getAttribute("href")).toBe(
         "/cards?prompt=legal-contracts-cards-8d3f5a1c",
       );
+    });
+  });
+
+  describe("Projects in Sidebar", () => {
+    it("should render the project selector with Default Project selected", async () => {
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={mockPrompts} featureToggleConfig={{}} />);
+      });
+
+      expect(screen.getByTestId("project-selector")).toBeInTheDocument();
+      expect(screen.getByText("Default Project")).toBeInTheDocument();
+      expect(screen.getByTestId("add-project-button")).toBeInTheDocument();
+    });
+
+    it("should allow adding a project with specific sections and only display those sections", async () => {
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={mockPrompts} featureToggleConfig={{}} />);
+      });
+
+      // Initially all sections with prompts are visible
+      expect(screen.getByText(/Research/i)).toBeInTheDocument();
+      expect(screen.getByText(/Testing/i)).toBeInTheDocument();
+      expect(screen.getByText(/Coding/i)).toBeInTheDocument();
+
+      // Add a project with only the "research" section
+      await act(async () => {
+        addProject("Research Only Project", "Focused on research", [
+          "research",
+        ]);
+      });
+
+      expect(screen.getByText("Research Only Project")).toBeInTheDocument();
+      expect(screen.getByText(/^Research$/i)).toBeInTheDocument();
+      expect(screen.queryByText(/Testing/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Coding/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Ideate/i)).not.toBeInTheDocument();
+
+      // Switch back to Default Project and verify all sections return
+      await act(async () => {
+        setActiveProject("default");
+      });
+
+      expect(screen.getByText("Default Project")).toBeInTheDocument();
+      expect(screen.getByText(/^Research$/i)).toBeInTheDocument();
+      expect(screen.getByText(/Testing/i)).toBeInTheDocument();
+      expect(screen.getByText(/Coding/i)).toBeInTheDocument();
+      expect(screen.getByText(/Ideate/i)).toBeInTheDocument();
+    });
+
+    it("should open the Add new Project modal and create a project via UI", async () => {
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={mockPrompts} featureToggleConfig={{}} />);
+      });
+
+      await act(async () => {
+        fireEvent.click(screen.getByTestId("add-project-button"));
+      });
+
+      expect(screen.getByText("Add new Project")).toBeInTheDocument();
+
+      const nameInput = screen.getByTestId("project-name-input");
+      await act(async () => {
+        fireEvent.change(nameInput, { target: { value: "Mobile App Project" } });
+      });
+
+      const saveBtn = screen.getByRole("button", { name: /Save Project/i });
+      await act(async () => {
+        fireEvent.click(saveBtn);
+      });
+
+      expect(screen.getByText("Mobile App Project")).toBeInTheDocument();
+      expect(screen.getByTestId("delete-project-button")).toBeInTheDocument();
     });
   });
 });

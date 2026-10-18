@@ -28,9 +28,18 @@ const Pinboard = ({ isModalVisible, onClose }) => {
 
   useEffect(() => {
     setIsMounted(true);
-    if (typeof window !== "undefined") {
+    const syncData = () => {
       setPinnedMessages(getPinboardData());
       setSavedUserContexts(getSortedUserContexts());
+    };
+    if (typeof window !== "undefined") {
+      syncData();
+      window.addEventListener("update-project", syncData);
+      window.addEventListener("update-context", syncData);
+      return () => {
+        window.removeEventListener("update-project", syncData);
+        window.removeEventListener("update-context", syncData);
+      };
     }
   }, [
     typeof window !== "undefined"
@@ -38,6 +47,9 @@ const Pinboard = ({ isModalVisible, onClose }) => {
       : null,
     typeof window !== "undefined"
       ? window.localStorage.getItem("context")
+      : null,
+    typeof window !== "undefined"
+      ? window.localStorage.getItem("activeProjectId")
       : null,
   ]);
 

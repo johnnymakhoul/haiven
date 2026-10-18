@@ -6,6 +6,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 // Mock modules before importing the component
 vi.mock("../app/_local_store", () => ({
   initializeLocalStorage: vi.fn(),
+  getActiveProject: vi.fn(),
 }));
 
 vi.mock("../app/feature_toggle", () => ({

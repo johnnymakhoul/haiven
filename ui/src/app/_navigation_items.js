@@ -22,7 +22,43 @@ export const THOUGHTWORKS_ONLY_CATEGORIES = [
   "deliveryManagement",
 ];
 
-export const initialiseMenuCategoriesForSidebar = (isThoughtworksInstance) => {
+export const SOFTWARE_DELIVERY_CATEGORIES = [
+  "research",
+  "ideate",
+  "analysis",
+  "coding",
+  "testing",
+  "architecture",
+  "other",
+];
+
+export const PROJECT_SECTION_OPTIONS = [
+  { key: "research", label: "Research", group: "Software Delivery" },
+  { key: "ideate", label: "Ideate", group: "Software Delivery" },
+  { key: "analysis", label: "Analyse", group: "Software Delivery" },
+  { key: "coding", label: "Coding", group: "Software Delivery" },
+  { key: "testing", label: "Testing", group: "Software Delivery" },
+  { key: "architecture", label: "Architecture", group: "Software Delivery" },
+  { key: "other", label: "Other", group: "Software Delivery" },
+];
+
+export const initialiseMenuCategoriesForSidebar = (
+  isThoughtworksInstance,
+  projectSections = null,
+) => {
+  const isSectionEnabled = (sectionKey) => {
+    if (!Array.isArray(projectSections)) {
+      return true;
+    }
+    if (sectionKey === "analysis") {
+      return (
+        projectSections.includes("analysis") ||
+        projectSections.includes("analyse")
+      );
+    }
+    return projectSections.includes(sectionKey);
+  };
+
   const addThoughtworksMenuItems = (categories) => {
     categories.thoughtworksLabel = {
       key: "thoughtworksLabel",
@@ -76,63 +112,84 @@ export const initialiseMenuCategoriesForSidebar = (isThoughtworksInstance) => {
   };
 
   const addSoftwareDeliveryMenuItems = (categories) => {
+    const hasAnySoftwareDeliverySection = SOFTWARE_DELIVERY_CATEGORIES.some(
+      (key) => isSectionEnabled(key),
+    );
+    if (!hasAnySoftwareDeliverySection) {
+      return;
+    }
+
     categories.softwareDeliveryLabel = {
       key: "softwareDeliveryLabel",
       label: "Software Delivery",
       className: "menu-divider",
       type: "group",
     };
-    categories.research = {
-      key: "research",
-      label: "Research",
-      icon: <RiBook2Line style={{ fontSize: "large" }} />,
-      children: [],
-    };
-    categories.ideate = {
-      key: "ideate",
-      label: "Ideate",
-      icon: <RiLightbulbLine style={{ fontSize: "large" }} />,
-      children: [
-        {
-          key: "creative-matrix",
-          label: <Link href="/creative-matrix">Creative Matrix</Link>,
-        },
-        {
-          key: "scenarios",
-          label: <Link href="/scenarios">Scenario Design</Link>,
-        },
-      ],
-    };
-    categories.analysis = {
-      key: "analyse",
-      label: "Analyse",
-      icon: <RiBookReadLine style={{ fontSize: "large" }} />,
-      children: [],
-    };
-    categories.coding = {
-      key: "coding",
-      label: "Coding",
-      icon: <RiCodeBoxLine style={{ fontSize: "large" }} />,
-      children: [],
-    };
-    categories.testing = {
-      key: "testing",
-      label: "Testing",
-      icon: <RiFlaskLine style={{ fontSize: "large" }} />,
-      children: [],
-    };
-    categories.architecture = {
-      key: "architecture",
-      label: "Architecture",
-      icon: <RiCompasses2Line style={{ fontSize: "large" }} />,
-      children: [],
-    };
-    categories.other = {
-      key: "other",
-      label: "Other",
-      icon: <RiChat2Line style={{ fontSize: "large" }} />,
-      children: [],
-    };
+    if (isSectionEnabled("research")) {
+      categories.research = {
+        key: "research",
+        label: "Research",
+        icon: <RiBook2Line style={{ fontSize: "large" }} />,
+        children: [],
+      };
+    }
+    if (isSectionEnabled("ideate")) {
+      categories.ideate = {
+        key: "ideate",
+        label: "Ideate",
+        icon: <RiLightbulbLine style={{ fontSize: "large" }} />,
+        children: [
+          {
+            key: "creative-matrix",
+            label: <Link href="/creative-matrix">Creative Matrix</Link>,
+          },
+          {
+            key: "scenarios",
+            label: <Link href="/scenarios">Scenario Design</Link>,
+          },
+        ],
+      };
+    }
+    if (isSectionEnabled("analysis")) {
+      categories.analysis = {
+        key: "analyse",
+        label: "Analyse",
+        icon: <RiBookReadLine style={{ fontSize: "large" }} />,
+        children: [],
+      };
+    }
+    if (isSectionEnabled("coding")) {
+      categories.coding = {
+        key: "coding",
+        label: "Coding",
+        icon: <RiCodeBoxLine style={{ fontSize: "large" }} />,
+        children: [],
+      };
+    }
+    if (isSectionEnabled("testing")) {
+      categories.testing = {
+        key: "testing",
+        label: "Testing",
+        icon: <RiFlaskLine style={{ fontSize: "large" }} />,
+        children: [],
+      };
+    }
+    if (isSectionEnabled("architecture")) {
+      categories.architecture = {
+        key: "architecture",
+        label: "Architecture",
+        icon: <RiCompasses2Line style={{ fontSize: "large" }} />,
+        children: [],
+      };
+    }
+    if (isSectionEnabled("other")) {
+      categories.other = {
+        key: "other",
+        label: "Other",
+        icon: <RiChat2Line style={{ fontSize: "large" }} />,
+        children: [],
+      };
+    }
   };
 
   const categories = {

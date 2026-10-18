@@ -9,6 +9,12 @@ import {
   saveNote,
   deleteContextByTimestamp,
   getSummaryForTheUserContext,
+  getProjects,
+  getActiveProject,
+  setActiveProject,
+  addProject,
+  deleteProject,
+  DEFAULT_PROJECT_SECTIONS,
 } from "../app/_local_store";
 import { toast } from "react-toastify";
 
@@ -373,6 +379,83 @@ describe("Local Store", () => {
 
       const result = getSummaryForTheUserContext("Context 2");
       expect(result).toBe("Summary 2");
+    });
+  });
+
+  describe("Projects management", () => {
+    beforeEach(() => {
+      localStorage.clear();
+      vi.clearAllMocks();
+    });
+
+    it("should return default project when no projects exist in localStorage", () => {
+      const projects = getProjects();
+      expect(projects.length).toBe(1);
+      expect(projects[0].id).toBe("default");
+      expect(projects[0].name).toBe("Default Project");
+      expect(projects[0].sections).toEqual(DEFAULT_PROJECT_SECTIONS);
+      expect(getActiveProject().id).toBe("default");
+    });
+
+    it("should add a new project with custom sections and set it as active", () => {
+      const created = addProject("Alpha Project", "Alpha description", [
+        "research",
+        "coding",
+      ]);
+
+      expect(created).not.toBeNull();
+      expect(created.name).toBe("Alpha Project");
+      expect(created.description).toBe("Alpha description");
+      expect(created.sections).toEqual(["research", "coding"]);
+
+      const projects = getProjects();
+      expect(projects.length).toBe(2);
+      expect(getActiveProject().id).toBe(created.id);
+    });
+
+    it("should switch between projects and isolate pinboard and context data", () => {
+      // Save data in Default Project
+      saveNote("Default project note");
+      saveContext("Default Context", "Default Summary");
+
+      // Create and switch to Project B
+      const projectB = addProject("Project B", "B desc", ["ideate"]);
+      expect(getActiveProject().id).toBe(projectB.id);
+
+      // Project B should start with empty pinboard and contexts
+      expect(getPinboardData()).toEqual([]);
+      expect(getSortedUserContexts()).toEqual([]);
+
+      // Save data in Project B
+      saveNote("Project B note");
+      saveContext("Project B Context", "Project B Summary");
+      expect(getPinboardData().length).toBe(1);
+      expect(getPinboardData()[0].summary).toBe("Project B note");
+      expect(getSortedUserContexts().length).toBe(1);
+      expect(getSortedUserContexts()[0].title).toBe("Project B Context");
+
+      // Switch back to Default Project
+      setActiveProject("default");
+      expect(getActiveProject().id).toBe("default");
+      expect(getPinboardData().length).toBe(1);
+      expect(getPinboardData()[0].summary).toBe("Default project note");
+      expect(getSortedUserContexts().length).toBe(1);
+      expect(getSortedUserContexts()[0].title).toBe("Default Context");
+    });
+
+    it("should delete a non-default project and revert active project to default", () => {
+      const projectB = addProject("Project B", "Desc", ["coding"]);
+      expect(getActiveProject().id).toBe(projectB.id);
+
+      const deleted = deleteProject(projectB.id);
+      expect(deleted).toBe(true);
+      expect(getProjects().length).toBe(1);
+      expect(getActiveProject().id).toBe("default");
+    });
+
+    it("should not allow deleting the default project", () => {
+      expect(deleteProject("default")).toBe(false);
+      expect(getProjects().length).toBe(1);
     });
   });
 });
