@@ -963,3 +963,82 @@ def test_legal_contracts_prompts_and_flows():
         assert "cost-analysis-tco-report-6f9d4a2b" in legal_follow_ups
         assert "schedule-roadmap-report-7c2e4f9a" in legal_follow_ups
         assert "togaf-gap-analysis-9d4a2b3e" in legal_follow_ups
+
+
+def test_sdlc_methodologies_prompts_and_flows():
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: SDLC Methodologies cards prompt
+        sdlc_cards = prompt_list.get("sdlc-methodologies-cards-1a4b7c9e")
+        assert sdlc_cards is not None
+        assert sdlc_cards.metadata["title"] == "SDLC Methodologies"
+        assert sdlc_cards.metadata["categories"] == ["analysis", "architecture"]
+        assert sdlc_cards.metadata["type"] == "cards"
+        assert sdlc_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output("sdlc-methodologies-cards-1a4b7c9e")
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "sdlc-methodologies-cards-1a4b7c9e",
+            "2 squads modernizing legacy ERP with quarterly steering gates and strict SOX audit compliance.",
+            {"context": "Enterprise Core ERP Replacement"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "Enterprise Core ERP Replacement" in rendered_cards
+        assert (
+            "2 squads modernizing legacy ERP with quarterly steering gates and strict SOX audit compliance."
+            in rendered_cards
+        )
+        assert "sdlc_dimension" in rendered_cards
+        assert "recommended_methodology" in rendered_cards
+        assert "**Traditional Approach (Waterfall / V-Model)**" in rendered_cards
+        assert "**Agile Approach (Scrum / Kanban / XP)**" in rendered_cards
+        assert "**Recommended Fit & Rationale**" in rendered_cards
+        assert "**Tailored Practices, Ceremonies & Artifacts**" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: SDLC Methodology & Operating Model Report prompt
+        sdlc_report = prompt_list.get("sdlc-methodologies-report-2b5c8d1f")
+        assert sdlc_report is not None
+        assert (
+            sdlc_report.metadata["title"]
+            == "SDLC Methodology & Operating Model Report"
+        )
+        assert sdlc_report.metadata["type"] == "chat"
+        assert sdlc_report.metadata["show"] is False
+
+        # Verify follow-ups from SDLC Methodologies cards
+        sdlc_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("sdlc-methodologies-cards-1a4b7c9e")
+        ]
+        assert "sdlc-methodologies-report-2b5c8d1f" in sdlc_follow_ups
+        assert "schedule-roadmap-report-7c2e4f9a" in sdlc_follow_ups
+        assert "requirements-constraints-volere-spec-8f9e1d2c" in sdlc_follow_ups
+        assert "adr-madr-spec-5a9b2d7f" in sdlc_follow_ups
+        assert "cost-analysis-tco-report-6f9d4a2b" in sdlc_follow_ups
+        assert "legal-contracts-report-9e4a6b2d" in sdlc_follow_ups
+

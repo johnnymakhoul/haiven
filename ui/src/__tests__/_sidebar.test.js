@@ -595,6 +595,37 @@ describe("Sidebar Component", () => {
         "/cards?prompt=legal-contracts-cards-8d3f5a1c",
       );
     });
+
+    it("should render SDLC Methodologies under Analyse and Architecture", async () => {
+      const sdlcPrompts = [
+        {
+          identifier: "sdlc-methodologies-cards-1a4b7c9e",
+          title: "SDLC Methodologies",
+          categories: ["analysis", "architecture"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={sdlcPrompts} featureToggleConfig={{}} />);
+      });
+
+      const analyseCategory = screen.getByText(/Analyse/i);
+      await act(async () => {
+        analyseCategory.click();
+      });
+
+      const sdlcLinks = screen.getAllByText("SDLC Methodologies");
+      expect(sdlcLinks.length).toBeGreaterThanOrEqual(1);
+      expect(sdlcLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=sdlc-methodologies-cards-1a4b7c9e",
+      );
+    });
   });
 
   describe("Projects in Sidebar", () => {
