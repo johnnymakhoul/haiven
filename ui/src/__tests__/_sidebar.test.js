@@ -626,6 +626,40 @@ describe("Sidebar Component", () => {
         "/cards?prompt=sdlc-methodologies-cards-1a4b7c9e",
       );
     });
+
+    it("should render Non-Functional Requirements / Architecture Characteristics under Analyse and Architecture", async () => {
+      const nfrPrompts = [
+        {
+          identifier: "nfr-architecture-characteristics-cards-3e7a9c2d",
+          title:
+            "Non-Functional Requirements / Architecture Characteristics",
+          categories: ["analysis", "architecture"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={nfrPrompts} featureToggleConfig={{}} />);
+      });
+
+      const analyseCategory = screen.getByText(/Analyse/i);
+      await act(async () => {
+        analyseCategory.click();
+      });
+
+      const nfrLinks = screen.getAllByText(
+        "Non-Functional Requirements / Architecture Characteristics",
+      );
+      expect(nfrLinks.length).toBeGreaterThanOrEqual(1);
+      expect(nfrLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=nfr-architecture-characteristics-cards-3e7a9c2d",
+      );
+    });
   });
 
   describe("Projects in Sidebar", () => {
