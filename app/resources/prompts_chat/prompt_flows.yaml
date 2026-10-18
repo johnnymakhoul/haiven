@@ -4,6 +4,7 @@
     - identifier: market-research-report-3d8a5b1e
     - identifier: epic-discussion-multistep-9456678f
     - identifier: requirements-constraints-volere-spec-8f9e1d2c
+    - identifier: nfr-architecture-characteristics-spec-4f8b1d3e
     - identifier: cost-analysis-tco-report-6f9d4a2b
     - identifier: legal-contracts-report-9e4a6b2d
     - identifier: sdlc-methodologies-report-2b5c8d1f
@@ -11,6 +12,7 @@
     identifier: requirements-constraints-volere-4a1b2c3d
   followUps:
     - identifier: requirements-constraints-volere-spec-8f9e1d2c
+    - identifier: nfr-architecture-characteristics-spec-4f8b1d3e
     - identifier: sdlc-methodologies-report-2b5c8d1f
     - identifier: legal-contracts-report-9e4a6b2d
     - identifier: schedule-roadmap-report-7c2e4f9a
@@ -21,6 +23,7 @@
 - firstStep:
     identifier: requirements-breakdown-3a845a85
   followUps:
+    - identifier: nfr-architecture-characteristics-spec-4f8b1d3e
     - identifier: sdlc-methodologies-report-2b5c8d1f
     - identifier: schedule-roadmap-report-7c2e4f9a
     - identifier: cost-analysis-tco-report-6f9d4a2b
@@ -32,6 +35,7 @@
   followUps:
     - identifier: togaf-baseline-dossier-8c3f1e2a
     - identifier: togaf-gap-analysis-9d4a2b3e
+    - identifier: nfr-architecture-characteristics-spec-4f8b1d3e
     - identifier: sdlc-methodologies-report-2b5c8d1f
     - identifier: legal-contracts-report-9e4a6b2d
     - identifier: schedule-roadmap-report-7c2e4f9a
@@ -42,6 +46,7 @@
     identifier: cost-analysis-cards-5e8b3c1a
   followUps:
     - identifier: cost-analysis-tco-report-6f9d4a2b
+    - identifier: nfr-architecture-characteristics-spec-4f8b1d3e
     - identifier: sdlc-methodologies-report-2b5c8d1f
     - identifier: legal-contracts-report-9e4a6b2d
     - identifier: schedule-roadmap-report-7c2e4f9a
@@ -52,6 +57,7 @@
     identifier: adr-cards-4f8a1c6e
   followUps:
     - identifier: adr-madr-spec-5a9b2d7f
+    - identifier: nfr-architecture-characteristics-spec-4f8b1d3e
     - identifier: sdlc-methodologies-report-2b5c8d1f
     - identifier: legal-contracts-report-9e4a6b2d
     - identifier: schedule-roadmap-report-7c2e4f9a
@@ -62,6 +68,7 @@
     identifier: schedule-estimation-cards-6b1d3e8f
   followUps:
     - identifier: schedule-roadmap-report-7c2e4f9a
+    - identifier: nfr-architecture-characteristics-spec-4f8b1d3e
     - identifier: sdlc-methodologies-report-2b5c8d1f
     - identifier: cost-analysis-tco-report-6f9d4a2b
     - identifier: legal-contracts-report-9e4a6b2d
@@ -72,6 +79,7 @@
     identifier: legal-contracts-cards-8d3f5a1c
   followUps:
     - identifier: legal-contracts-report-9e4a6b2d
+    - identifier: nfr-architecture-characteristics-spec-4f8b1d3e
     - identifier: sdlc-methodologies-report-2b5c8d1f
     - identifier: requirements-constraints-volere-spec-8f9e1d2c
     - identifier: adr-madr-spec-5a9b2d7f
@@ -82,10 +90,23 @@
     identifier: sdlc-methodologies-cards-1a4b7c9e
   followUps:
     - identifier: sdlc-methodologies-report-2b5c8d1f
+    - identifier: nfr-architecture-characteristics-spec-4f8b1d3e
     - identifier: schedule-roadmap-report-7c2e4f9a
     - identifier: requirements-constraints-volere-spec-8f9e1d2c
     - identifier: adr-madr-spec-5a9b2d7f
     - identifier: cost-analysis-tco-report-6f9d4a2b
     - identifier: legal-contracts-report-9e4a6b2d
+    - identifier: togaf-gap-analysis-9d4a2b3e
+    - identifier: epic-discussion-multistep-9456678f
+- firstStep:
+    identifier: nfr-architecture-characteristics-cards-3e7a9c2d
+  followUps:
+    - identifier: nfr-architecture-characteristics-spec-4f8b1d3e
+    - identifier: adr-madr-spec-5a9b2d7f
+    - identifier: cost-analysis-tco-report-6f9d4a2b
+    - identifier: requirements-constraints-volere-spec-8f9e1d2c
+    - identifier: schedule-roadmap-report-7c2e4f9a
+    - identifier: legal-contracts-report-9e4a6b2d
+    - identifier: sdlc-methodologies-report-2b5c8d1f
     - identifier: togaf-gap-analysis-9d4a2b3e
     - identifier: epic-discussion-multistep-9456678f

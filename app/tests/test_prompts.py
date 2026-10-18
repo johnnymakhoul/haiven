@@ -1042,3 +1042,90 @@ def test_sdlc_methodologies_prompts_and_flows():
         assert "cost-analysis-tco-report-6f9d4a2b" in sdlc_follow_ups
         assert "legal-contracts-report-9e4a6b2d" in sdlc_follow_ups
 
+
+def test_nfr_architecture_characteristics_prompts_and_flows():
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: Non-Functional Requirements / Architecture Characteristics cards prompt
+        nfr_cards = prompt_list.get("nfr-architecture-characteristics-cards-3e7a9c2d")
+        assert nfr_cards is not None
+        assert (
+            nfr_cards.metadata["title"]
+            == "Non-Functional Requirements / Architecture Characteristics"
+        )
+        assert nfr_cards.metadata["categories"] == ["analysis", "architecture"]
+        assert nfr_cards.metadata["type"] == "cards"
+        assert nfr_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output(
+            "nfr-architecture-characteristics-cards-3e7a9c2d"
+        )
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "nfr-architecture-characteristics-cards-3e7a9c2d",
+            "1,500 RPS peak checkout load, p99 < 250ms, 99.95% uptime, RTO <= 15m, RPO = 0.",
+            {"context": "European B2B Order Checkout Platform"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "European B2B Order Checkout Platform" in rendered_cards
+        assert (
+            "1,500 RPS peak checkout load, p99 < 250ms, 99.95% uptime, RTO <= 15m, RPO = 0."
+            in rendered_cards
+        )
+        assert "characteristic_category" in rendered_cards
+        assert "priority_and_driving_status" in rendered_cards
+        assert "**Quality Requirement & Scenario**" in rendered_cards
+        assert "**Quantifiable Fit Criterion (SLI / SLO / Target Metric)**" in rendered_cards
+        assert "**Architectural Impact & Trade-offs**" in rendered_cards
+        assert "**Architectural Fitness Function & Verification**" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: NFR & Architecture Characteristics Specification prompt
+        nfr_spec = prompt_list.get("nfr-architecture-characteristics-spec-4f8b1d3e")
+        assert nfr_spec is not None
+        assert (
+            nfr_spec.metadata["title"]
+            == "NFR & Architecture Characteristics Specification"
+        )
+        assert nfr_spec.metadata["type"] == "chat"
+        assert nfr_spec.metadata["show"] is False
+
+        # Verify follow-ups from NFR / Architecture Characteristics cards
+        nfr_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups(
+                "nfr-architecture-characteristics-cards-3e7a9c2d"
+            )
+        ]
+        assert "nfr-architecture-characteristics-spec-4f8b1d3e" in nfr_follow_ups
+        assert "adr-madr-spec-5a9b2d7f" in nfr_follow_ups
+        assert "cost-analysis-tco-report-6f9d4a2b" in nfr_follow_ups
+        assert "requirements-constraints-volere-spec-8f9e1d2c" in nfr_follow_ups
+        assert "schedule-roadmap-report-7c2e4f9a" in nfr_follow_ups
+        assert "legal-contracts-report-9e4a6b2d" in nfr_follow_ups
+        assert "sdlc-methodologies-report-2b5c8d1f" in nfr_follow_ups
+
+
