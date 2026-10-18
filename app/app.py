@@ -11,6 +11,7 @@ from config_service import ConfigService
 from disclaimer_and_guidelines import DisclaimerAndGuidelinesService
 from auth.api_key_repository_factory import ApiKeyRepositoryFactory
 from auth.api_key_auth_service import ApiKeyAuthService
+from persistence.data_repository import DataRepository
 
 
 class App:
@@ -30,7 +31,12 @@ class App:
 
         prompts_factory = PromptsFactory(knowledge_pack_path)
         disclaimer_and_guidelines = DisclaimerAndGuidelinesService(knowledge_pack_path)
-        chat_session_memory = ServerChatSessionMemory()
+        data_repository = DataRepository(
+            config_service.load_data_persistence_path()
+            if hasattr(config_service, "load_data_persistence_path")
+            else None
+        )
+        chat_session_memory = ServerChatSessionMemory(data_repository=data_repository)
         llm_chat_factory = ChatClientFactory(config_service)
         chat_manager = ChatManager(
             config_service, chat_session_memory, llm_chat_factory, knowledge_manager
@@ -56,6 +62,7 @@ class App:
                 image_service,
                 disclaimer_and_guidelines,
                 api_key_auth_service,
+                data_repository=data_repository,
             ),
         ).create()
 

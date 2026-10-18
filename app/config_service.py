@@ -277,6 +277,17 @@ class ConfigService:
         """Check if API key authentication is enabled via feature toggle."""
         return os.getenv("API_KEY_AUTH_ENABLED", "false").lower() == "true"
 
+    def load_data_persistence_path(self) -> str:
+        """Load the file path for persistent workspace data."""
+        persistence_config = self.data.get("data_persistence", {})
+        if isinstance(persistence_config, dict):
+            file_path = persistence_config.get("file_path")
+            if file_path:
+                return file_path
+        return os.getenv(
+            "HAIVEN_DATA_PATH", os.path.join(os.getcwd(), "data", "haiven_data.json")
+        )
+
     def _load_yaml(self, path: str) -> dict:
         """
         Load YAML data from a config file.

@@ -8,6 +8,8 @@ from api.api_company_research import ApiCompanyResearch
 from api.api_features import ApiFeatures
 from api.api_key_management import ApiKeyManagementAPI
 from api.api_rules import ApiRules
+from api.api_persistence import ApiPersistence
+from persistence.data_repository import DataRepository
 from llms.chats import (
     ChatManager,
 )
@@ -30,12 +32,18 @@ class BobaApi:
         image_service: ImageDescriptionService,
         disclaimer_and_guidelines: DisclaimerAndGuidelinesService,
         api_key_auth_service: ApiKeyAuthService = None,
+        data_repository: DataRepository = None,
     ):
         self.knowledge_manager = knowledge_manager
         self.chat_manager = chat_manager
         self.config_service = config_service
         self.inspirations_manager = InspirationsManager()
         self.api_key_auth_service = api_key_auth_service
+        self.data_repository = data_repository or DataRepository(
+            self.config_service.load_data_persistence_path()
+            if hasattr(self.config_service, "load_data_persistence_path")
+            else None
+        )
         self.prompts_chat = prompts_factory.create_chat_prompt_list(
             self.knowledge_manager.knowledge_base_markdown, self.knowledge_manager
         )
@@ -87,6 +95,7 @@ class BobaApi:
         )
         ApiFeatures(app)
         ApiRules(app, self.config_service)
+        ApiPersistence(app, self.data_repository)
         # Only register API key management endpoints if API key auth is enabled
         if self.api_key_auth_service and self.config_service.is_api_key_auth_enabled():
             ApiKeyManagementAPI(app, self.api_key_auth_service, self.config_service)
