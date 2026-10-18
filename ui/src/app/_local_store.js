@@ -19,6 +19,25 @@ export const DEFAULT_PROJECT = {
   isDefault: true,
 };
 
+const syncWithBackend = async (url, options = {}) => {
+  if (typeof fetch !== "function") return null;
+  try {
+    const response = await fetch(url, {
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      ...options,
+    });
+    if (!response || typeof response.json !== "function" || !response.ok) {
+      return null;
+    }
+    return await response.json();
+  } catch (e) {
+    return null;
+  }
+};
+
 export const getProjects = () => {
   try {
     const raw = localStorage.getItem("projects");
@@ -59,6 +78,10 @@ export const setActiveProject = (projectId) => {
   const target = projects.find((p) => p.id === projectId);
   const resolvedId = target ? target.id : DEFAULT_PROJECT.id;
   localStorage.setItem("activeProjectId", resolvedId);
+  syncWithBackend("/api/projects/active", {
+    method: "PUT",
+    body: JSON.stringify({ projectId: resolvedId }),
+  });
   if (typeof window !== "undefined") {
     window.dispatchEvent(new Event("update-project"));
     window.dispatchEvent(new Event("update-context"));
@@ -90,6 +113,10 @@ export const addProject = (
   };
   const updatedProjects = [...projects, newProject];
   localStorage.setItem("projects", JSON.stringify(updatedProjects));
+  syncWithBackend("/api/projects", {
+    method: "POST",
+    body: JSON.stringify(newProject),
+  });
   setActiveProject(newProject.id);
   return newProject;
 };
@@ -108,6 +135,9 @@ export const deleteProject = (projectId) => {
     localStorage.setItem(`pinboard_${projectId}`, JSON.stringify({}));
     localStorage.setItem(`context_${projectId}`, JSON.stringify([]));
   }
+  syncWithBackend(`/api/projects/${encodeURIComponent(projectId)}`, {
+    method: "DELETE",
+  });
   if (getActiveProjectId() === projectId) {
     setActiveProject(DEFAULT_PROJECT.id);
   } else if (typeof window !== "undefined") {
@@ -116,18 +146,92 @@ export const deleteProject = (projectId) => {
   return true;
 };
 
-const getPinboardStorageKey = () => {
-  const activeId = getActiveProjectId();
+const getPinboardStorageKey = (projectId = null) => {
+  const activeId = projectId || getActiveProjectId();
   return activeId && activeId !== DEFAULT_PROJECT.id
     ? `pinboard_${activeId}`
     : "pinboard";
 };
 
-const getContextStorageKey = () => {
-  const activeId = getActiveProjectId();
+const getContextStorageKey = (projectId = null) => {
+  const activeId = projectId || getActiveProjectId();
   return activeId && activeId !== DEFAULT_PROJECT.id
     ? `context_${activeId}`
     : "context";
+};
+
+export const hydrateFromBackend = async () => {
+  const serverState = await syncWithBackend("/api/persistence/state", {
+    method: "GET",
+  });
+  if (!serverState || !Array.isArray(serverState.projects)) {
+    return null;
+  }
+
+  const serverHasCustomData =
+    serverState.projects.length > 1 ||
+    Object.keys(serverState.pinboard || {}).length > 0 ||
+    Object.keys(serverState.contexts || {}).length > 0;
+
+  if (serverHasCustomData) {
+    localStorage.setItem("projects", JSON.stringify(serverState.projects));
+    if (serverState.activeProjectId) {
+      localStorage.setItem("activeProjectId", serverState.activeProjectId);
+    }
+    if (serverState.pinboard && typeof serverState.pinboard === "object") {
+      Object.entries(serverState.pinboard).forEach(([projId, pins]) => {
+        localStorage.setItem(
+          getPinboardStorageKey(projId),
+          JSON.stringify(pins || {}),
+        );
+      });
+    }
+    if (serverState.contexts && typeof serverState.contexts === "object") {
+      Object.entries(serverState.contexts).forEach(([projId, ctxs]) => {
+        localStorage.setItem(
+          getContextStorageKey(projId),
+          JSON.stringify(ctxs || []),
+        );
+      });
+    }
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("update-project"));
+      window.dispatchEvent(new Event("update-context"));
+    }
+  } else {
+    // Migrate existing localStorage data to server if present
+    const localProjects = getProjects();
+    const pinboardByProject = {};
+    const contextsByProject = {};
+    localProjects.forEach((p) => {
+      const pins =
+        JSON.parse(localStorage.getItem(getPinboardStorageKey(p.id))) || {};
+      if (Object.keys(pins).length > 0) {
+        pinboardByProject[p.id] = pins;
+      }
+      const ctxs =
+        JSON.parse(localStorage.getItem(getContextStorageKey(p.id))) || [];
+      if (ctxs.length > 0) {
+        contextsByProject[p.id] = ctxs;
+      }
+    });
+    if (
+      localProjects.length > 1 ||
+      Object.keys(pinboardByProject).length > 0 ||
+      Object.keys(contextsByProject).length > 0
+    ) {
+      await syncWithBackend("/api/persistence/state", {
+        method: "PUT",
+        body: JSON.stringify({
+          projects: localProjects,
+          activeProjectId: getActiveProjectId(),
+          pinboard: pinboardByProject,
+          contexts: contextsByProject,
+        }),
+      });
+    }
+  }
+  return serverState;
 };
 
 export const initializeLocalStorage = () => {
@@ -143,11 +247,13 @@ export const initializeLocalStorage = () => {
   if (!localStorage.getItem("activeProjectId")) {
     localStorage.setItem("activeProjectId", DEFAULT_PROJECT.id);
   }
+  hydrateFromBackend();
 };
 
 export const addToPinboard = (key, content, isUserDefined = false) => {
   try {
-    const storageKey = getPinboardStorageKey();
+    const activeId = getActiveProjectId();
+    const storageKey = getPinboardStorageKey(activeId);
     var pinboard = localStorage.getItem(storageKey);
     var pinboardMap = pinboard ? JSON.parse(pinboard) : {};
     var pinboardEntries = Object.entries(pinboardMap);
@@ -160,6 +266,13 @@ export const addToPinboard = (key, content, isUserDefined = false) => {
     pinboardEntries.unshift([key.toString(), value]);
     pinboardMap = Object.fromEntries(pinboardEntries);
     localStorage.setItem(storageKey, JSON.stringify(pinboardMap));
+    syncWithBackend(
+      `/api/projects/${encodeURIComponent(activeId)}/pinboard`,
+      {
+        method: "POST",
+        body: JSON.stringify({ key: key.toString(), value }),
+      },
+    );
     toast.success("Text pinned successfully! You can view it on the Pinboard.");
   } catch (error) {
     console.log(error.message);
@@ -177,11 +290,17 @@ const transformPinboardEntry = (value, timestamp) => {
 };
 
 export const saveNote = (newNote) => {
-  const storageKey = getPinboardStorageKey();
+  const activeId = getActiveProjectId();
+  const storageKey = getPinboardStorageKey(activeId);
   const timestamp = Date.now().toString();
   const pinboardData = JSON.parse(localStorage.getItem(storageKey)) || {};
-  pinboardData[timestamp] = { content: newNote, isUserDefined: true };
+  const value = { content: newNote, isUserDefined: true };
+  pinboardData[timestamp] = value;
   localStorage.setItem(storageKey, JSON.stringify(pinboardData));
+  syncWithBackend(`/api/projects/${encodeURIComponent(activeId)}/pinboard`, {
+    method: "POST",
+    body: JSON.stringify({ key: timestamp, value }),
+  });
 };
 
 export const getPinboardData = () => {
@@ -210,35 +329,55 @@ export const getSortedUserContexts = () => {
 };
 
 export const saveContext = (title, description) => {
-  const storageKey = getContextStorageKey();
+  const activeId = getActiveProjectId();
+  const storageKey = getContextStorageKey(activeId);
   const timestamp = Date.now();
   const contextData = getContexts();
-  contextData.push({
+  const newContext = {
     title,
     summary: description,
     timestamp,
     isUserDefined: true,
-  });
+  };
+  contextData.push(newContext);
   localStorage.setItem(storageKey, JSON.stringify(contextData));
+  syncWithBackend(`/api/projects/${encodeURIComponent(activeId)}/contexts`, {
+    method: "POST",
+    body: JSON.stringify(newContext),
+  });
   window.dispatchEvent(new Event("update-context"));
 };
 
 export const deleteContextByTimestamp = (timestamp) => {
-  const storageKey = getContextStorageKey();
+  const activeId = getActiveProjectId();
+  const storageKey = getContextStorageKey(activeId);
   const contextData = getContexts();
   const updatedContextData = contextData.filter(
     (context) => context.timestamp !== timestamp,
   );
 
   localStorage.setItem(storageKey, JSON.stringify(updatedContextData));
+  syncWithBackend(
+    `/api/projects/${encodeURIComponent(activeId)}/contexts/${encodeURIComponent(timestamp)}`,
+    {
+      method: "DELETE",
+    },
+  );
   window.dispatchEvent(new Event("update-context"));
 };
 
 export const deletePinOrNoteByTimestamp = (timestamp) => {
-  const storageKey = getPinboardStorageKey();
+  const activeId = getActiveProjectId();
+  const storageKey = getPinboardStorageKey(activeId);
   const pinboardData = JSON.parse(localStorage.getItem(storageKey)) || {};
   delete pinboardData[timestamp];
   localStorage.setItem(storageKey, JSON.stringify(pinboardData));
+  syncWithBackend(
+    `/api/projects/${encodeURIComponent(activeId)}/pinboard/${encodeURIComponent(timestamp)}`,
+    {
+      method: "DELETE",
+    },
+  );
 };
 
 export const getSummaryForTheUserContext = (contextTitle) => {

@@ -14,6 +14,7 @@ import {
   setActiveProject,
   addProject,
   deleteProject,
+  hydrateFromBackend,
   DEFAULT_PROJECT_SECTIONS,
 } from "../app/_local_store";
 import { toast } from "react-toastify";
@@ -456,6 +457,56 @@ describe("Local Store", () => {
     it("should not allow deleting the default project", () => {
       expect(deleteProject("default")).toBe(false);
       expect(getProjects().length).toBe(1);
+    });
+
+    it("should hydrate projects, pinboard, and contexts from backend API", async () => {
+      const serverPayload = {
+        projects: [
+          {
+            id: "default",
+            name: "Default Project",
+            sections: DEFAULT_PROJECT_SECTIONS,
+            isDefault: true,
+          },
+          {
+            id: "project-500",
+            name: "Server Project",
+            description: "Loaded from server",
+            sections: ["research", "architecture"],
+            isDefault: false,
+          },
+        ],
+        activeProjectId: "project-500",
+        pinboard: {
+          "project-500": {
+            "17000099": { content: "Server pinned note", isUserDefined: true },
+          },
+        },
+        contexts: {
+          "project-500": [
+            {
+              title: "Server Context",
+              summary: "Server Context Summary",
+              timestamp: 17000099,
+              isUserDefined: true,
+            },
+          ],
+        },
+      };
+
+      const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue({
+        ok: true,
+        json: async () => serverPayload,
+      });
+
+      await hydrateFromBackend();
+
+      expect(getActiveProject().id).toBe("project-500");
+      expect(getActiveProject().name).toBe("Server Project");
+      expect(getPinboardData()[0].summary).toBe("Server pinned note");
+      expect(getSortedUserContexts()[0].title).toBe("Server Context");
+
+      fetchSpy.mockRestore();
     });
   });
 });

@@ -339,8 +339,33 @@ class JSONChat(HaivenBaseChat):
 
 
 class ServerChatSessionMemory:
-    def __init__(self):
+    def __init__(self, data_repository=None):
         self.USER_CHATS = {}
+        self.data_repository = data_repository
+
+    def _persist_session(self, session_key: str):
+        if not self.data_repository or session_key not in self.USER_CHATS:
+            return
+        try:
+            entry = self.USER_CHATS[session_key]
+            chat_session = entry.get("chat")
+            messages = []
+            if chat_session and hasattr(chat_session, "memory"):
+                for msg in chat_session.memory:
+                    messages.append(
+                        {
+                            "role": msg.__class__.__name__,
+                            "content": getattr(msg, "content", str(msg)),
+                        }
+                    )
+            self.data_repository.save_session(
+                session_id=session_key,
+                project_id=self.data_repository.get_active_project_id(),
+                category=entry.get("category", "unknown"),
+                messages=messages,
+            )
+        except Exception:
+            pass
 
     def clear_old_entries(self):
         allowed_age_in_minutes = 30
@@ -374,12 +399,14 @@ class ServerChatSessionMemory:
             "created_at": time.time(),
             "last_access": time.time(),
             "user": user_identifier,
+            "category": category,
             "chat": None,
         }
         return session_key
 
     def store_chat(self, session_key: str, chat_session: HaivenBaseChat):
         self.USER_CHATS[session_key]["chat"] = chat_session
+        self._persist_session(session_key)
 
     def get_chat(self, session_key: str):
         if session_key not in self.USER_CHATS:
@@ -387,12 +414,15 @@ class ServerChatSessionMemory:
                 f"Invalid identifier {session_key}, your chat session might have expired"
             )
         self.USER_CHATS[session_key]["last_access"] = time.time()
+        self._persist_session(session_key)
         return self.USER_CHATS[session_key]["chat"]
 
     def delete_entry(self, session_key):
         if session_key in self.USER_CHATS:
             print("Discarding a chat session from memory", session_key)
             del self.USER_CHATS[session_key]
+        if self.data_repository:
+            self.data_repository.delete_session(session_key)
 
     def get_or_create_chat(
         self,
