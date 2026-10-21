@@ -1304,5 +1304,117 @@ def test_project_objectives_prompts_and_flows():
         assert "togaf-gap-analysis-9d4a2b3e" in objectives_follow_ups
 
 
+def test_software_specification_prompts_and_flows():
+    """Verify that the Software Specification & Workflows cards and detailed study
+    prompts load correctly with category 'specification', validate against required schema fields,
+    render with upstream analysis context, and verify prompt flow connections."""
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: Software Specification & Workflows cards prompt
+        spec_cards = prompt_list.get("software-specification-workflow-cards-9a4b2c1e")
+        assert spec_cards is not None
+        assert spec_cards.metadata["title"] == "Software Specification & Workflows"
+        assert spec_cards.metadata["categories"] == ["specification"]
+        assert spec_cards.metadata["type"] == "cards"
+        assert spec_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output("software-specification-workflow-cards-9a4b2c1e")
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "software-specification-workflow-cards-9a4b2c1e",
+            "Synthesize B2B Wholesale checkout with offline sync (Volere), ADR-003 Outbox, and p99 < 300ms.",
+            {"context": "European B2B Wholesale Commerce Platform Analysis Dossier"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "European B2B Wholesale Commerce Platform Analysis Dossier" in rendered_cards
+        assert "Synthesize B2B Wholesale checkout with offline sync" in rendered_cards
+        assert "subsystem_domain" in rendered_cards
+        assert "**Use Case Specifications**" in rendered_cards
+        assert "**Workflow & Activity Orchestration**" in rendered_cards
+        assert "**State Machine & Entity Lifecycle**" in rendered_cards
+        assert "**Component Architecture & Interface Contracts**" in rendered_cards
+        assert "**UML Diagram (Mermaid)**" in rendered_cards
+        assert "**Traceability to Analysis Inputs**" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: Software Solution Specification & Detailed Study report prompt
+        spec_study = prompt_list.get("software-specification-detailed-study-7c3d1f5b")
+        assert spec_study is not None
+        assert (
+            spec_study.metadata["title"]
+            == "Software Solution Specification & Detailed Study"
+        )
+        assert spec_study.metadata["type"] == "chat"
+        assert spec_study.metadata["categories"] == ["specification"]
+        assert spec_study.metadata["show"] is False
+        assert spec_study.metadata["editable"] is True
+
+        # Verify follow-ups from Software Specification cards
+        spec_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("software-specification-workflow-cards-9a4b2c1e")
+        ]
+        assert "software-specification-detailed-study-7c3d1f5b" in spec_follow_ups
+        assert "software-architecture-candidates-spec-9c3f1e5b" in spec_follow_ups
+        assert "project-objectives-spec-2e5b8d3a" in spec_follow_ups
+        assert "requirements-constraints-volere-spec-8f9e1d2c" in spec_follow_ups
+        assert "adr-madr-spec-5a9b2d7f" in spec_follow_ups
+        assert "nfr-architecture-characteristics-spec-4f8b1d3e" in spec_follow_ups
+        assert "cost-analysis-tco-report-6f9d4a2b" in spec_follow_ups
+        assert "sdlc-methodologies-report-2b5c8d1f" in spec_follow_ups
+        assert "schedule-roadmap-report-7c2e4f9a" in spec_follow_ups
+        assert "legal-contracts-report-9e4a6b2d" in spec_follow_ups
+        assert "togaf-gap-analysis-9d4a2b3e" in spec_follow_ups
+
+        # Verify upstream analysis prompts link to Software Specification Detailed Study
+        req_breakdown_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("requirements-breakdown-3a845a85")
+        ]
+        assert "software-specification-detailed-study-7c3d1f5b" in req_breakdown_follow_ups
+
+        volere_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("requirements-constraints-volere-4a1b2c3d")
+        ]
+        assert "software-specification-detailed-study-7c3d1f5b" in volere_follow_ups
+
+        adr_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("adr-cards-4f8a1c6e")
+        ]
+        assert "software-specification-detailed-study-7c3d1f5b" in adr_follow_ups
+
+        legal_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("legal-contracts-cards-8d3f5a1c")
+        ]
+        assert "software-specification-detailed-study-7c3d1f5b" in legal_follow_ups
+
+
+
 
 

@@ -717,6 +717,38 @@ describe("Sidebar Component", () => {
         "/cards?prompt=project-objectives-cards-1f4a7c2e",
       );
     });
+
+    it("should render Software Specification & Workflows under Software Specification", async () => {
+      const specPrompts = [
+        {
+          identifier: "software-specification-workflow-cards-9a4b2c1e",
+          title: "Software Specification & Workflows",
+          categories: ["specification"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={specPrompts} featureToggleConfig={{}} />);
+      });
+
+      expect(screen.getByText(/Software Specification/i)).toBeInTheDocument();
+      const specCategory = screen.getByText(/Software Specification/i);
+      await act(async () => {
+        specCategory.click();
+      });
+
+      const specLinks = screen.getAllByText("Software Specification & Workflows");
+      expect(specLinks.length).toBeGreaterThanOrEqual(1);
+      expect(specLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=software-specification-workflow-cards-9a4b2c1e",
+      );
+    });
   });
 
   describe("Projects in Sidebar", () => {
