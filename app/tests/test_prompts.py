@@ -1217,6 +1217,92 @@ def test_software_architecture_candidates_prompts():
         assert "sdlc-methodologies-report-2b5c8d1f" in arch_follow_ups
         assert "legal-contracts-report-9e4a6b2d" in arch_follow_ups
         assert "togaf-gap-analysis-9d4a2b3e" in arch_follow_ups
+        assert "project-objectives-spec-2e5b8d3a" in arch_follow_ups
+
+
+def test_project_objectives_prompts_and_flows():
+    """Verify that the Project Objectives cards and specification prompts
+    load correctly, validate against required schema fields, render with context,
+    and verify the prompt flow connections."""
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: Project Objectives cards prompt
+        objectives_cards = prompt_list.get("project-objectives-cards-1f4a7c2e")
+        assert objectives_cards is not None
+        assert objectives_cards.metadata["title"] == "Project Objectives"
+        assert objectives_cards.metadata["categories"] == ["analysis"]
+        assert objectives_cards.metadata["type"] == "cards"
+        assert objectives_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output("project-objectives-cards-1f4a7c2e")
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "project-objectives-cards-1f4a7c2e",
+            "Reduce wholesale order processing turnaround from 4 days to <1 hour, cut error rate <0.5%.",
+            {"context": "European B2B Wholesale Portal"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "European B2B Wholesale Portal" in rendered_cards
+        assert (
+            "Reduce wholesale order processing turnaround from 4 days to <1 hour, cut error rate <0.5%."
+            in rendered_cards
+        )
+        assert "objective_category" in rendered_cards
+        assert "time_horizon" in rendered_cards
+        assert "**Business Outcome & Value**" in rendered_cards
+        assert "**SMART Breakdown**" in rendered_cards
+        assert "**Quantifiable Fit Criterion**" in rendered_cards
+        assert "**Primary Beneficiaries**" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: Project Objectives & Value Specification prompt
+        objectives_spec = prompt_list.get("project-objectives-spec-2e5b8d3a")
+        assert objectives_spec is not None
+        assert (
+            objectives_spec.metadata["title"]
+            == "Project Objectives & Value Specification"
+        )
+        assert objectives_spec.metadata["type"] == "chat"
+        assert objectives_spec.metadata["show"] is False
+
+        # Verify follow-ups from Project Objectives cards
+        objectives_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("project-objectives-cards-1f4a7c2e")
+        ]
+        assert "project-objectives-spec-2e5b8d3a" in objectives_follow_ups
+        assert "requirements-constraints-volere-spec-8f9e1d2c" in objectives_follow_ups
+        assert "nfr-architecture-characteristics-spec-4f8b1d3e" in objectives_follow_ups
+        assert "cost-analysis-tco-report-6f9d4a2b" in objectives_follow_ups
+        assert "software-architecture-candidates-spec-9c3f1e5b" in objectives_follow_ups
+        assert "sdlc-methodologies-report-2b5c8d1f" in objectives_follow_ups
+        assert "schedule-roadmap-report-7c2e4f9a" in objectives_follow_ups
+        assert "legal-contracts-report-9e4a6b2d" in objectives_follow_ups
+        assert "togaf-gap-analysis-9d4a2b3e" in objectives_follow_ups
+
 
 
 
