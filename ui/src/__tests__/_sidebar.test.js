@@ -686,6 +686,37 @@ describe("Sidebar Component", () => {
         "/cards?prompt=software-architecture-candidates-cards-8d2e4f1a",
       );
     });
+
+    it("should render Project Objectives under Analyse", async () => {
+      const objectivesPrompts = [
+        {
+          identifier: "project-objectives-cards-1f4a7c2e",
+          title: "Project Objectives",
+          categories: ["analysis"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={objectivesPrompts} featureToggleConfig={{}} />);
+      });
+
+      const analyseCategory = screen.getByText(/Analyse/i);
+      await act(async () => {
+        analyseCategory.click();
+      });
+
+      const objectivesLinks = screen.getAllByText("Project Objectives");
+      expect(objectivesLinks.length).toBeGreaterThanOrEqual(1);
+      expect(objectivesLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=project-objectives-cards-1f4a7c2e",
+      );
+    });
   });
 
   describe("Projects in Sidebar", () => {
