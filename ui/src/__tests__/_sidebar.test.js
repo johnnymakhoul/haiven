@@ -364,9 +364,7 @@ describe("Sidebar Component", () => {
       });
 
       await act(async () => {
-        render(
-          <Sidebar prompts={analysisPrompts} featureToggleConfig={{}} />,
-        );
+        render(<Sidebar prompts={analysisPrompts} featureToggleConfig={{}} />);
       });
 
       const analyseCategory = screen.getByText(/Analyse/i);
@@ -546,9 +544,7 @@ describe("Sidebar Component", () => {
       });
 
       await act(async () => {
-        render(
-          <Sidebar prompts={schedulePrompts} featureToggleConfig={{}} />,
-        );
+        render(<Sidebar prompts={schedulePrompts} featureToggleConfig={{}} />);
       });
 
       const analyseCategory = screen.getByText(/Analyse/i);
@@ -631,8 +627,7 @@ describe("Sidebar Component", () => {
       const nfrPrompts = [
         {
           identifier: "nfr-architecture-characteristics-cards-3e7a9c2d",
-          title:
-            "Non-Functional Requirements / Architecture Characteristics",
+          title: "Non-Functional Requirements / Architecture Characteristics",
           categories: ["analysis", "architecture"],
           type: "cards",
           show: true,
@@ -658,6 +653,37 @@ describe("Sidebar Component", () => {
       expect(nfrLinks.length).toBeGreaterThanOrEqual(1);
       expect(nfrLinks[0].closest("a").getAttribute("href")).toBe(
         "/cards?prompt=nfr-architecture-characteristics-cards-3e7a9c2d",
+      );
+    });
+
+    it("should render Candidate Software Architectures under Analyse and Architecture", async () => {
+      const archPrompts = [
+        {
+          identifier: "software-architecture-candidates-cards-8d2e4f1a",
+          title: "Candidate Software Architectures",
+          categories: ["analysis", "architecture"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={archPrompts} featureToggleConfig={{}} />);
+      });
+
+      const analyseCategory = screen.getByText(/Analyse/i);
+      await act(async () => {
+        analyseCategory.click();
+      });
+
+      const archLinks = screen.getAllByText("Candidate Software Architectures");
+      expect(archLinks.length).toBeGreaterThanOrEqual(1);
+      expect(archLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=software-architecture-candidates-cards-8d2e4f1a",
       );
     });
   });
@@ -733,7 +759,9 @@ describe("Sidebar Component", () => {
 
       const nameInput = screen.getByTestId("project-name-input");
       await act(async () => {
-        fireEvent.change(nameInput, { target: { value: "Mobile App Project" } });
+        fireEvent.change(nameInput, {
+          target: { value: "Mobile App Project" },
+        });
       });
 
       const saveBtn = screen.getByRole("button", { name: /Save Project/i });
