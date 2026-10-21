@@ -1378,6 +1378,9 @@ def test_software_specification_prompts_and_flows():
             for f in prompt_list.get_follow_ups("software-specification-workflow-cards-9a4b2c1e")
         ]
         assert "software-specification-detailed-study-7c3d1f5b" in spec_follow_ups
+        assert "product-breakdown-structure-spec-4c8d2b0f" in spec_follow_ups
+        assert "product-development-process-spec-6e0f4d2b" in spec_follow_ups
+        assert "work-breakdown-structure-spec-8a2b6f4d" in spec_follow_ups
         assert "software-architecture-candidates-spec-9c3f1e5b" in spec_follow_ups
         assert "project-objectives-spec-2e5b8d3a" in spec_follow_ups
         assert "requirements-constraints-volere-spec-8f9e1d2c" in spec_follow_ups
@@ -1413,6 +1416,244 @@ def test_software_specification_prompts_and_flows():
             for f in prompt_list.get_follow_ups("legal-contracts-cards-8d3f5a1c")
         ]
         assert "software-specification-detailed-study-7c3d1f5b" in legal_follow_ups
+
+
+def test_product_breakdown_structure_prompts_and_flows():
+    """Verify that the Product Breakdown Structure (PBS) cards and specification
+    prompts load correctly with category 'specification', validate against required schema fields,
+    render with software specification context, and verify prompt flow connections."""
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: PBS cards prompt
+        pbs_cards = prompt_list.get("product-breakdown-structure-cards-3b7c1a9e")
+        assert pbs_cards is not None
+        assert pbs_cards.metadata["title"] == "Product Breakdown Structure (PBS)"
+        assert pbs_cards.metadata["categories"] == ["specification"]
+        assert pbs_cards.metadata["type"] == "cards"
+        assert pbs_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output("product-breakdown-structure-cards-3b7c1a9e")
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "product-breakdown-structure-cards-3b7c1a9e",
+            "Decompose Subsystem 1 (Checkout Engine) and Subsystem 2 (Offline Sync Cache).",
+            {"context": "European B2B Wholesale Portal Software Specification Dossier"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "European B2B Wholesale Portal Software Specification Dossier" in rendered_cards
+        assert "Decompose Subsystem 1 (Checkout Engine)" in rendered_cards
+        assert "deliverable_category" in rendered_cards
+        assert "parent_subsystem" in rendered_cards
+        assert "**Deliverable Scope & Specification**" in rendered_cards
+        assert "**Component Hierarchy & Child Deliverables**" in rendered_cards
+        assert "**Acceptance & Fit Criteria (Quality Gates)**" in rendered_cards
+        assert "**Packaging & Distribution Format**" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: PBS Specification prompt
+        pbs_spec = prompt_list.get("product-breakdown-structure-spec-4c8d2b0f")
+        assert pbs_spec is not None
+        assert (
+            pbs_spec.metadata["title"]
+            == "Product Breakdown Structure (PBS) Specification"
+        )
+        assert pbs_spec.metadata["type"] == "chat"
+        assert pbs_spec.metadata["categories"] == ["specification"]
+        assert pbs_spec.metadata["show"] is False
+        assert pbs_spec.metadata["editable"] is True
+
+        # Verify follow-ups from PBS cards
+        pbs_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("product-breakdown-structure-cards-3b7c1a9e")
+        ]
+        assert "product-breakdown-structure-spec-4c8d2b0f" in pbs_follow_ups
+        assert "product-development-process-spec-6e0f4d2b" in pbs_follow_ups
+        assert "work-breakdown-structure-spec-8a2b6f4d" in pbs_follow_ups
+        assert "software-specification-detailed-study-7c3d1f5b" in pbs_follow_ups
+
+
+def test_product_development_process_prompts_and_flows():
+    """Verify that the Product Development Process (PDP) cards and specification
+    prompts load correctly with category 'specification', validate against required schema fields,
+    render with PBS context, and verify prompt flow connections."""
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: PDP cards prompt
+        pdp_cards = prompt_list.get("product-development-process-cards-5d9e3c1a")
+        assert pdp_cards is not None
+        assert pdp_cards.metadata["title"] == "Product Development Process (PDP)"
+        assert pdp_cards.metadata["categories"] == ["specification"]
+        assert pdp_cards.metadata["type"] == "cards"
+        assert pdp_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output("product-development-process-cards-5d9e3c1a")
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "product-development-process-cards-5d9e3c1a",
+            "Define Stage 2 Architecture Spike and Stage 3 Core Service Build gates.",
+            {"context": "European B2B Platform PBS and Architecture Baseline"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "European B2B Platform PBS and Architecture Baseline" in rendered_cards
+        assert "Define Stage 2 Architecture Spike" in rendered_cards
+        assert "lifecycle_stage" in rendered_cards
+        assert "gate_type" in rendered_cards
+        assert "**Stage Purpose & Key Activities**" in rendered_cards
+        assert "**Stage Gate Entry Criteria (Inputs)**" in rendered_cards
+        assert "**Stage Gate Exit Criteria (Definition of Done)**" in rendered_cards
+        assert "**Governance, RACI & Review Cadence**" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: PDP Specification prompt
+        pdp_spec = prompt_list.get("product-development-process-spec-6e0f4d2b")
+        assert pdp_spec is not None
+        assert (
+            pdp_spec.metadata["title"]
+            == "Product Development Process (PDP) Specification"
+        )
+        assert pdp_spec.metadata["type"] == "chat"
+        assert pdp_spec.metadata["categories"] == ["specification"]
+        assert pdp_spec.metadata["show"] is False
+        assert pdp_spec.metadata["editable"] is True
+
+        # Verify follow-ups from PDP cards
+        pdp_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("product-development-process-cards-5d9e3c1a")
+        ]
+        assert "product-development-process-spec-6e0f4d2b" in pdp_follow_ups
+        assert "work-breakdown-structure-spec-8a2b6f4d" in pdp_follow_ups
+        assert "product-breakdown-structure-spec-4c8d2b0f" in pdp_follow_ups
+
+
+def test_work_breakdown_structure_prompts_and_flows():
+    """Verify that the Detailed Work Breakdown Structure (WBS) cards and specification
+    prompts load correctly with category 'specification', validate against required schema fields
+    (including time, cost, and resources for each work item), and verify prompt flow connections."""
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: Detailed WBS cards prompt
+        wbs_cards = prompt_list.get("work-breakdown-structure-cards-7f1a5e3c")
+        assert wbs_cards is not None
+        assert wbs_cards.metadata["title"] == "Detailed Work Breakdown Structure (WBS)"
+        assert wbs_cards.metadata["categories"] == ["specification"]
+        assert wbs_cards.metadata["type"] == "cards"
+        assert wbs_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output("work-breakdown-structure-cards-7f1a5e3c")
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "work-breakdown-structure-cards-7f1a5e3c",
+            "Generate work packages for Checkout Microservice and Offline SQLite Sync with €850/day rate.",
+            {"context": "European B2B Wholesale Portal PBS Deliverables and PDP Stage Gates"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "European B2B Wholesale Portal PBS Deliverables and PDP Stage Gates" in rendered_cards
+        assert "Generate work packages for Checkout Microservice" in rendered_cards
+        assert "wbs_level" in rendered_cards
+        assert "pbs_deliverable_ref" in rendered_cards
+        assert "pdp_stage_ref" in rendered_cards
+        assert "**Scope of Work & Deliverable Outcome**" in rendered_cards
+        assert "**Time & Effort Estimation (Three-Point PERT)**" in rendered_cards
+        assert "**Cost Breakdown & Budget Impact**" in rendered_cards
+        assert "**Resource Allocation & Staffing**" in rendered_cards
+        assert "**Dependencies & Critical Path**" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: Detailed WBS Specification prompt
+        wbs_spec = prompt_list.get("work-breakdown-structure-spec-8a2b6f4d")
+        assert wbs_spec is not None
+        assert (
+            wbs_spec.metadata["title"]
+            == "Detailed Work Breakdown Structure (WBS) Specification"
+        )
+        assert wbs_spec.metadata["type"] == "chat"
+        assert wbs_spec.metadata["categories"] == ["specification"]
+        assert wbs_spec.metadata["show"] is False
+        assert wbs_spec.metadata["editable"] is True
+
+        # Verify follow-ups from WBS cards
+        wbs_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("work-breakdown-structure-cards-7f1a5e3c")
+        ]
+        assert "work-breakdown-structure-spec-8a2b6f4d" in wbs_follow_ups
+        assert "cost-analysis-tco-report-6f9d4a2b" in wbs_follow_ups
+        assert "schedule-roadmap-report-7c2e4f9a" in wbs_follow_ups
+        assert "product-breakdown-structure-spec-4c8d2b0f" in wbs_follow_ups
+        assert "product-development-process-spec-6e0f4d2b" in wbs_follow_ups
+        assert "software-specification-detailed-study-7c3d1f5b" in wbs_follow_ups
+
 
 
 
