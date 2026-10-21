@@ -6,6 +6,7 @@ export const DEFAULT_PROJECT_SECTIONS = [
   "ideate",
   "analysis",
   "specification",
+  "project-management",
   "coding",
   "testing",
   "architecture",
@@ -55,12 +56,17 @@ export const getProjects = () => {
         (Array.isArray(p.sections) &&
           p.sections.includes("analysis") &&
           p.sections.includes("architecture") &&
-          !p.sections.includes("specification"))
+          (!p.sections.includes("specification") ||
+            !p.sections.includes("project-management")))
       ) {
         return {
           ...p,
           sections: Array.from(
-            new Set([...(p.sections || []), "specification"]),
+            new Set([
+              ...(p.sections || []),
+              "specification",
+              "project-management",
+            ]),
           ),
         };
       }

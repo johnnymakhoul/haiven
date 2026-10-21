@@ -845,6 +845,70 @@ describe("Sidebar Component", () => {
         "/cards?prompt=work-breakdown-structure-cards-7f1a5e3c",
       );
     });
+
+    it("should render Quality Assurance: Risk Matrix & Mitigation under Project Management", async () => {
+      const qaPrompts = [
+        {
+          identifier: "quality-assurance-risk-matrix-cards-5b8e2a1d",
+          title: "Quality Assurance: Risk Matrix & Mitigation",
+          categories: ["project-management"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={qaPrompts} featureToggleConfig={{}} />);
+      });
+
+      expect(screen.getByText(/Project Management/i)).toBeInTheDocument();
+      const pmCategory = screen.getByText(/Project Management/i);
+      await act(async () => {
+        pmCategory.click();
+      });
+
+      const qaLinks = screen.getAllByText("Quality Assurance: Risk Matrix & Mitigation");
+      expect(qaLinks.length).toBeGreaterThanOrEqual(1);
+      expect(qaLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=quality-assurance-risk-matrix-cards-5b8e2a1d",
+      );
+    });
+
+    it("should render Change Management under Project Management", async () => {
+      const cmPrompts = [
+        {
+          identifier: "change-management-cards-7d0a4c3f",
+          title: "Change Management",
+          categories: ["project-management"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={cmPrompts} featureToggleConfig={{}} />);
+      });
+
+      expect(screen.getByText(/Project Management/i)).toBeInTheDocument();
+      const pmCategory = screen.getByText(/Project Management/i);
+      await act(async () => {
+        pmCategory.click();
+      });
+
+      const cmLinks = screen.getAllByText("Change Management");
+      expect(cmLinks.length).toBeGreaterThanOrEqual(1);
+      expect(cmLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=change-management-cards-7d0a4c3f",
+      );
+    });
   });
 
   describe("Projects in Sidebar", () => {

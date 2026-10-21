@@ -214,12 +214,50 @@
     identifier: work-breakdown-structure-cards-7f1a5e3c
   followUps:
     - identifier: work-breakdown-structure-spec-8a2b6f4d
+    - identifier: quality-assurance-risk-matrix-spec-6c9f3b2e
+    - identifier: change-management-spec-8e1b5d4a
     - identifier: product-breakdown-structure-spec-4c8d2b0f
     - identifier: product-development-process-spec-6e0f4d2b
     - identifier: software-specification-detailed-study-7c3d1f5b
     - identifier: cost-analysis-tco-report-6f9d4a2b
     - identifier: schedule-roadmap-report-7c2e4f9a
     - identifier: sdlc-methodologies-report-2b5c8d1f
+    - identifier: project-objectives-spec-2e5b8d3a
+    - identifier: requirements-constraints-volere-spec-8f9e1d2c
+    - identifier: software-architecture-candidates-spec-9c3f1e5b
+    - identifier: legal-contracts-report-9e4a6b2d
+    - identifier: togaf-gap-analysis-9d4a2b3e
+    - identifier: epic-discussion-multistep-9456678f
+- firstStep:
+    identifier: quality-assurance-risk-matrix-cards-5b8e2a1d
+  followUps:
+    - identifier: quality-assurance-risk-matrix-spec-6c9f3b2e
+    - identifier: change-management-spec-8e1b5d4a
+    - identifier: work-breakdown-structure-spec-8a2b6f4d
+    - identifier: cost-analysis-tco-report-6f9d4a2b
+    - identifier: schedule-roadmap-report-7c2e4f9a
+    - identifier: software-specification-detailed-study-7c3d1f5b
+    - identifier: product-breakdown-structure-spec-4c8d2b0f
+    - identifier: product-development-process-spec-6e0f4d2b
+    - identifier: sdlc-methodologies-report-2b5c8d1f
+    - identifier: project-objectives-spec-2e5b8d3a
+    - identifier: requirements-constraints-volere-spec-8f9e1d2c
+    - identifier: software-architecture-candidates-spec-9c3f1e5b
+    - identifier: legal-contracts-report-9e4a6b2d
+    - identifier: togaf-gap-analysis-9d4a2b3e
+    - identifier: epic-discussion-multistep-9456678f
+- firstStep:
+    identifier: change-management-cards-7d0a4c3f
+  followUps:
+    - identifier: change-management-spec-8e1b5d4a
+    - identifier: quality-assurance-risk-matrix-spec-6c9f3b2e
+    - identifier: work-breakdown-structure-spec-8a2b6f4d
+    - identifier: schedule-roadmap-report-7c2e4f9a
+    - identifier: sdlc-methodologies-report-2b5c8d1f
+    - identifier: software-specification-detailed-study-7c3d1f5b
+    - identifier: product-development-process-spec-6e0f4d2b
+    - identifier: product-breakdown-structure-spec-4c8d2b0f
+    - identifier: cost-analysis-tco-report-6f9d4a2b
     - identifier: project-objectives-spec-2e5b8d3a
     - identifier: requirements-constraints-volere-spec-8f9e1d2c
     - identifier: software-architecture-candidates-spec-9c3f1e5b
