@@ -749,6 +749,102 @@ describe("Sidebar Component", () => {
         "/cards?prompt=software-specification-workflow-cards-9a4b2c1e",
       );
     });
+
+    it("should render Product Breakdown Structure (PBS) under Software Specification", async () => {
+      const pbsPrompts = [
+        {
+          identifier: "product-breakdown-structure-cards-3b7c1a9e",
+          title: "Product Breakdown Structure (PBS)",
+          categories: ["specification"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={pbsPrompts} featureToggleConfig={{}} />);
+      });
+
+      expect(screen.getByText(/Software Specification/i)).toBeInTheDocument();
+      const specCategory = screen.getByText(/Software Specification/i);
+      await act(async () => {
+        specCategory.click();
+      });
+
+      const pbsLinks = screen.getAllByText("Product Breakdown Structure (PBS)");
+      expect(pbsLinks.length).toBeGreaterThanOrEqual(1);
+      expect(pbsLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=product-breakdown-structure-cards-3b7c1a9e",
+      );
+    });
+
+    it("should render Product Development Process (PDP) under Software Specification", async () => {
+      const pdpPrompts = [
+        {
+          identifier: "product-development-process-cards-5d9e3c1a",
+          title: "Product Development Process (PDP)",
+          categories: ["specification"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={pdpPrompts} featureToggleConfig={{}} />);
+      });
+
+      expect(screen.getByText(/Software Specification/i)).toBeInTheDocument();
+      const specCategory = screen.getByText(/Software Specification/i);
+      await act(async () => {
+        specCategory.click();
+      });
+
+      const pdpLinks = screen.getAllByText("Product Development Process (PDP)");
+      expect(pdpLinks.length).toBeGreaterThanOrEqual(1);
+      expect(pdpLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=product-development-process-cards-5d9e3c1a",
+      );
+    });
+
+    it("should render Detailed Work Breakdown Structure (WBS) under Software Specification", async () => {
+      const wbsPrompts = [
+        {
+          identifier: "work-breakdown-structure-cards-7f1a5e3c",
+          title: "Detailed Work Breakdown Structure (WBS)",
+          categories: ["specification"],
+          type: "cards",
+          show: true,
+        },
+      ];
+
+      useRouter.mockReturnValue({
+        pathname: "/",
+      });
+
+      await act(async () => {
+        render(<Sidebar prompts={wbsPrompts} featureToggleConfig={{}} />);
+      });
+
+      expect(screen.getByText(/Software Specification/i)).toBeInTheDocument();
+      const specCategory = screen.getByText(/Software Specification/i);
+      await act(async () => {
+        specCategory.click();
+      });
+
+      const wbsLinks = screen.getAllByText("Detailed Work Breakdown Structure (WBS)");
+      expect(wbsLinks.length).toBeGreaterThanOrEqual(1);
+      expect(wbsLinks[0].closest("a").getAttribute("href")).toBe(
+        "/cards?prompt=work-breakdown-structure-cards-7f1a5e3c",
+      );
+    });
   });
 
   describe("Projects in Sidebar", () => {
