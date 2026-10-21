@@ -1648,11 +1648,175 @@ def test_work_breakdown_structure_prompts_and_flows():
             for f in prompt_list.get_follow_ups("work-breakdown-structure-cards-7f1a5e3c")
         ]
         assert "work-breakdown-structure-spec-8a2b6f4d" in wbs_follow_ups
+        assert "quality-assurance-risk-matrix-spec-6c9f3b2e" in wbs_follow_ups
+        assert "change-management-spec-8e1b5d4a" in wbs_follow_ups
         assert "cost-analysis-tco-report-6f9d4a2b" in wbs_follow_ups
         assert "schedule-roadmap-report-7c2e4f9a" in wbs_follow_ups
         assert "product-breakdown-structure-spec-4c8d2b0f" in wbs_follow_ups
         assert "product-development-process-spec-6e0f4d2b" in wbs_follow_ups
         assert "software-specification-detailed-study-7c3d1f5b" in wbs_follow_ups
+
+
+def test_quality_assurance_risk_matrix_prompts_and_flows():
+    """Verify that the Quality Assurance: Risk Matrix & Mitigation cards and specification
+    prompts load correctly with category 'project-management', validate against required schema fields
+    (including probability, impact, severity, prevention, and mitigation), and verify prompt flow connections."""
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: QA Risk Matrix cards prompt
+        qa_cards = prompt_list.get("quality-assurance-risk-matrix-cards-5b8e2a1d")
+        assert qa_cards is not None
+        assert qa_cards.metadata["title"] == "Quality Assurance: Risk Matrix & Mitigation"
+        assert qa_cards.metadata["categories"] == ["project-management"]
+        assert qa_cards.metadata["type"] == "cards"
+        assert qa_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output("quality-assurance-risk-matrix-cards-5b8e2a1d")
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "quality-assurance-risk-matrix-cards-5b8e2a1d",
+            "Analyze offline sync data corruption and third-party SAP batch timeout risks.",
+            {"context": "European B2B Wholesale Portal Delivery Architecture and WBS Scope"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "European B2B Wholesale Portal Delivery Architecture and WBS Scope" in rendered_cards
+        assert "Analyze offline sync data corruption" in rendered_cards
+        assert "risk_category" in rendered_cards
+        assert "probability" in rendered_cards
+        assert "impact" in rendered_cards
+        assert "severity" in rendered_cards
+        assert "**Risk Description & Root Cause**" in rendered_cards
+        assert "**Risk Treatment & Controls**" in rendered_cards
+        assert "**Quality Assurance Verification Gate**" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: QA Risk Management Plan Specification prompt
+        qa_spec = prompt_list.get("quality-assurance-risk-matrix-spec-6c9f3b2e")
+        assert qa_spec is not None
+        assert (
+            qa_spec.metadata["title"]
+            == "Quality Assurance & Risk Management Plan"
+        )
+        assert qa_spec.metadata["type"] == "chat"
+        assert qa_spec.metadata["categories"] == ["project-management"]
+        assert qa_spec.metadata["show"] is False
+        assert qa_spec.metadata["editable"] is True
+
+        # Verify follow-ups from QA Risk Matrix cards
+        qa_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("quality-assurance-risk-matrix-cards-5b8e2a1d")
+        ]
+        assert "quality-assurance-risk-matrix-spec-6c9f3b2e" in qa_follow_ups
+        assert "change-management-spec-8e1b5d4a" in qa_follow_ups
+        assert "work-breakdown-structure-spec-8a2b6f4d" in qa_follow_ups
+        assert "cost-analysis-tco-report-6f9d4a2b" in qa_follow_ups
+        assert "schedule-roadmap-report-7c2e4f9a" in qa_follow_ups
+        assert "software-specification-detailed-study-7c3d1f5b" in qa_follow_ups
+
+
+def test_change_management_prompts_and_flows():
+    """Verify that the Change Management cards and specification
+    prompts load correctly with category 'project-management', validate against required schema fields
+    (including stakeholder impact, communication, training, and rollback), and verify prompt flow connections."""
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: Change Management cards prompt
+        cm_cards = prompt_list.get("change-management-cards-7d0a4c3f")
+        assert cm_cards is not None
+        assert cm_cards.metadata["title"] == "Change Management"
+        assert cm_cards.metadata["categories"] == ["project-management"]
+        assert cm_cards.metadata["type"] == "cards"
+        assert cm_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output("change-management-cards-7d0a4c3f")
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "change-management-cards-7d0a4c3f",
+            "Transition 45 sales reps and 300 wholesale distributors to self-service portal.",
+            {"context": "European B2B Wholesale Self-Service Portal Rollout Plan"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "European B2B Wholesale Self-Service Portal Rollout Plan" in rendered_cards
+        assert "Transition 45 sales reps" in rendered_cards
+        assert "change_dimension" in rendered_cards
+        assert "target_stakeholders" in rendered_cards
+        assert "**Change Scope & Business Imperative**" in rendered_cards
+        assert "**Stakeholder Readiness & Resistance Analysis**" in rendered_cards
+        assert "**Actionable Enablement Plan**" in rendered_cards
+        assert "**Governance, Cutover & Rollback Protocols**" in rendered_cards
+        assert "**Adoption KPIs & Verification**" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: Change Management Specification prompt
+        cm_spec = prompt_list.get("change-management-spec-8e1b5d4a")
+        assert cm_spec is not None
+        assert (
+            cm_spec.metadata["title"]
+            == "Change Management & Adoption Specification"
+        )
+        assert cm_spec.metadata["type"] == "chat"
+        assert cm_spec.metadata["categories"] == ["project-management"]
+        assert cm_spec.metadata["show"] is False
+        assert cm_spec.metadata["editable"] is True
+
+        # Verify follow-ups from Change Management cards
+        cm_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups("change-management-cards-7d0a4c3f")
+        ]
+        assert "change-management-spec-8e1b5d4a" in cm_follow_ups
+        assert "quality-assurance-risk-matrix-spec-6c9f3b2e" in cm_follow_ups
+        assert "work-breakdown-structure-spec-8a2b6f4d" in cm_follow_ups
+        assert "schedule-roadmap-report-7c2e4f9a" in cm_follow_ups
+        assert "software-specification-detailed-study-7c3d1f5b" in cm_follow_ups
+
 
 
 

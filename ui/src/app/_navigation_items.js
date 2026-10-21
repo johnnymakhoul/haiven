@@ -6,6 +6,7 @@ import {
   RiCodeBoxLine,
   RiBookReadLine,
   RiFileList3Line,
+  RiShieldCheckLine,
   RiChat2Line,
   RiChatQuoteLine,
   RiCompasses2Line,
@@ -28,6 +29,7 @@ export const SOFTWARE_DELIVERY_CATEGORIES = [
   "ideate",
   "analysis",
   "specification",
+  "project-management",
   "coding",
   "testing",
   "architecture",
@@ -41,6 +43,11 @@ export const PROJECT_SECTION_OPTIONS = [
   {
     key: "specification",
     label: "Software Specification",
+    group: "Software Delivery",
+  },
+  {
+    key: "project-management",
+    label: "Project Management",
     group: "Software Delivery",
   },
   { key: "coding", label: "Coding", group: "Software Delivery" },
@@ -68,6 +75,13 @@ export const initialiseMenuCategoriesForSidebar = (
         projectSections.includes("specification") ||
         projectSections.includes("specifications") ||
         projectSections.includes("software-specification")
+      );
+    }
+    if (sectionKey === "project-management") {
+      return (
+        projectSections.includes("project-management") ||
+        projectSections.includes("projectmanagement") ||
+        projectSections.includes("project_management")
       );
     }
     return projectSections.includes(sectionKey);
@@ -177,6 +191,14 @@ export const initialiseMenuCategoriesForSidebar = (
         key: "specification",
         label: "Software Specification",
         icon: <RiFileList3Line style={{ fontSize: "large" }} />,
+        children: [],
+      };
+    }
+    if (isSectionEnabled("project-management")) {
+      categories["project-management"] = {
+        key: "project-management",
+        label: "Project Management",
+        icon: <RiShieldCheckLine style={{ fontSize: "large" }} />,
         children: [],
       };
     }
