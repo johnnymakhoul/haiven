@@ -102,11 +102,25 @@
     identifier: nfr-architecture-characteristics-cards-3e7a9c2d
   followUps:
     - identifier: nfr-architecture-characteristics-spec-4f8b1d3e
+    - identifier: software-architecture-candidates-spec-9c3f1e5b
     - identifier: adr-madr-spec-5a9b2d7f
     - identifier: cost-analysis-tco-report-6f9d4a2b
     - identifier: requirements-constraints-volere-spec-8f9e1d2c
     - identifier: schedule-roadmap-report-7c2e4f9a
     - identifier: legal-contracts-report-9e4a6b2d
     - identifier: sdlc-methodologies-report-2b5c8d1f
+    - identifier: togaf-gap-analysis-9d4a2b3e
+    - identifier: epic-discussion-multistep-9456678f
+- firstStep:
+    identifier: software-architecture-candidates-cards-8d2e4f1a
+  followUps:
+    - identifier: software-architecture-candidates-spec-9c3f1e5b
+    - identifier: adr-madr-spec-5a9b2d7f
+    - identifier: nfr-architecture-characteristics-spec-4f8b1d3e
+    - identifier: cost-analysis-tco-report-6f9d4a2b
+    - identifier: requirements-constraints-volere-spec-8f9e1d2c
+    - identifier: schedule-roadmap-report-7c2e4f9a
+    - identifier: sdlc-methodologies-report-2b5c8d1f
+    - identifier: legal-contracts-report-9e4a6b2d
     - identifier: togaf-gap-analysis-9d4a2b3e
     - identifier: epic-discussion-multistep-9456678f

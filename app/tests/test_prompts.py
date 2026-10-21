@@ -1121,11 +1121,102 @@ def test_nfr_architecture_characteristics_prompts_and_flows():
             )
         ]
         assert "nfr-architecture-characteristics-spec-4f8b1d3e" in nfr_follow_ups
+        assert "software-architecture-candidates-spec-9c3f1e5b" in nfr_follow_ups
         assert "adr-madr-spec-5a9b2d7f" in nfr_follow_ups
         assert "cost-analysis-tco-report-6f9d4a2b" in nfr_follow_ups
         assert "requirements-constraints-volere-spec-8f9e1d2c" in nfr_follow_ups
         assert "schedule-roadmap-report-7c2e4f9a" in nfr_follow_ups
         assert "legal-contracts-report-9e4a6b2d" in nfr_follow_ups
         assert "sdlc-methodologies-report-2b5c8d1f" in nfr_follow_ups
+
+
+def test_software_architecture_candidates_prompts():
+    """Verify that the Candidate Software Architectures cards and specification prompts
+    load correctly, validate against required schema fields, render with context,
+    and verify the prompt flow connections."""
+    import os
+    import tempfile
+    import shutil
+
+    resources_prompts_chat = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "resources",
+        "prompts_chat",
+    )
+
+    with tempfile.TemporaryDirectory() as tmp_pack:
+        chat_dir = os.path.join(tmp_pack, "prompts", "chat")
+        os.makedirs(chat_dir, exist_ok=True)
+        for fname in os.listdir(resources_prompts_chat):
+            shutil.copy(
+                os.path.join(resources_prompts_chat, fname),
+                os.path.join(chat_dir, fname),
+            )
+
+        knowledge_base = create_knowledge_base(TEST_KNOWLEDGE_PACK_PATH)
+        knowledge_manager = create_knowledge_manager()
+        prompt_list = PromptList(
+            "chat", knowledge_base, knowledge_manager, root_dir=tmp_pack
+        )
+
+        # Step 1: Candidate Software Architectures cards prompt
+        arch_cards = prompt_list.get("software-architecture-candidates-cards-8d2e4f1a")
+        assert arch_cards is not None
+        assert arch_cards.metadata["title"] == "Candidate Software Architectures"
+        assert arch_cards.metadata["categories"] == ["analysis", "architecture"]
+        assert arch_cards.metadata["type"] == "cards"
+        assert arch_cards.metadata["editable"] is True
+        assert prompt_list.produces_json_output(
+            "software-architecture-candidates-cards-8d2e4f1a"
+        )
+
+        rendered_cards, template_cards = prompt_list.render_prompt(
+            "software-architecture-candidates-cards-8d2e4f1a",
+            "Peak 1,500 RPS, p99 < 250ms, 99.95% uptime, modular monolith vs event-driven microservices.",
+            {"context": "European B2B Order Platform"},
+        )
+        assert "context" in template_cards.input_variables
+        assert "user_input" in template_cards.input_variables
+        assert "European B2B Order Platform" in rendered_cards
+        assert (
+            "Peak 1,500 RPS, p99 < 250ms, 99.95% uptime, modular monolith vs event-driven microservices."
+            in rendered_cards
+        )
+        assert "architecture_style" in rendered_cards
+        assert "recommendation_status" in rendered_cards
+        assert "**Architecture Overview & Topology**" in rendered_cards
+        assert "**Alignment with Driving NFRs & '-ilities'**" in rendered_cards
+        assert "**Trade-offs, Friction & Negative Consequences**" in rendered_cards
+        assert "**Cost & Team Feasibility (Conway's Law & FinOps)**" in rendered_cards
+        assert "**Key Fitness Function & Verification Gate**" in rendered_cards
+        assert "self-review" in rendered_cards
+
+        # Step 2: Candidate Software Architectures Specification prompt
+        arch_spec = prompt_list.get("software-architecture-candidates-spec-9c3f1e5b")
+        assert arch_spec is not None
+        assert (
+            arch_spec.metadata["title"]
+            == "Candidate Software Architectures Specification"
+        )
+        assert arch_spec.metadata["type"] == "chat"
+        assert arch_spec.metadata["show"] is False
+
+        # Verify follow-ups from Candidate Software Architectures cards
+        arch_follow_ups = [
+            f["identifier"]
+            for f in prompt_list.get_follow_ups(
+                "software-architecture-candidates-cards-8d2e4f1a"
+            )
+        ]
+        assert "software-architecture-candidates-spec-9c3f1e5b" in arch_follow_ups
+        assert "adr-madr-spec-5a9b2d7f" in arch_follow_ups
+        assert "nfr-architecture-characteristics-spec-4f8b1d3e" in arch_follow_ups
+        assert "cost-analysis-tco-report-6f9d4a2b" in arch_follow_ups
+        assert "requirements-constraints-volere-spec-8f9e1d2c" in arch_follow_ups
+        assert "schedule-roadmap-report-7c2e4f9a" in arch_follow_ups
+        assert "sdlc-methodologies-report-2b5c8d1f" in arch_follow_ups
+        assert "legal-contracts-report-9e4a6b2d" in arch_follow_ups
+        assert "togaf-gap-analysis-9d4a2b3e" in arch_follow_ups
+
 
 
