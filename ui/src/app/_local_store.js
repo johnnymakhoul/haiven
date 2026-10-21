@@ -5,6 +5,7 @@ export const DEFAULT_PROJECT_SECTIONS = [
   "research",
   "ideate",
   "analysis",
+  "specification",
   "coding",
   "testing",
   "architecture",
@@ -46,7 +47,25 @@ export const getProjects = () => {
       return [DEFAULT_PROJECT];
     }
     const hasDefault = parsed.some((p) => p.id === DEFAULT_PROJECT.id);
-    return hasDefault ? parsed : [DEFAULT_PROJECT, ...parsed];
+    const list = hasDefault ? parsed : [DEFAULT_PROJECT, ...parsed];
+    return list.map((p) => {
+      if (
+        p.isDefault ||
+        p.id === DEFAULT_PROJECT.id ||
+        (Array.isArray(p.sections) &&
+          p.sections.includes("analysis") &&
+          p.sections.includes("architecture") &&
+          !p.sections.includes("specification"))
+      ) {
+        return {
+          ...p,
+          sections: Array.from(
+            new Set([...(p.sections || []), "specification"]),
+          ),
+        };
+      }
+      return p;
+    });
   } catch (e) {
     return [DEFAULT_PROJECT];
   }

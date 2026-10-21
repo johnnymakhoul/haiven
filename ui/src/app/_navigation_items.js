@@ -5,6 +5,7 @@ import {
   RiLightbulbLine,
   RiCodeBoxLine,
   RiBookReadLine,
+  RiFileList3Line,
   RiChat2Line,
   RiChatQuoteLine,
   RiCompasses2Line,
@@ -26,6 +27,7 @@ export const SOFTWARE_DELIVERY_CATEGORIES = [
   "research",
   "ideate",
   "analysis",
+  "specification",
   "coding",
   "testing",
   "architecture",
@@ -36,6 +38,11 @@ export const PROJECT_SECTION_OPTIONS = [
   { key: "research", label: "Research", group: "Software Delivery" },
   { key: "ideate", label: "Ideate", group: "Software Delivery" },
   { key: "analysis", label: "Analyse", group: "Software Delivery" },
+  {
+    key: "specification",
+    label: "Software Specification",
+    group: "Software Delivery",
+  },
   { key: "coding", label: "Coding", group: "Software Delivery" },
   { key: "testing", label: "Testing", group: "Software Delivery" },
   { key: "architecture", label: "Architecture", group: "Software Delivery" },
@@ -54,6 +61,13 @@ export const initialiseMenuCategoriesForSidebar = (
       return (
         projectSections.includes("analysis") ||
         projectSections.includes("analyse")
+      );
+    }
+    if (sectionKey === "specification") {
+      return (
+        projectSections.includes("specification") ||
+        projectSections.includes("specifications") ||
+        projectSections.includes("software-specification")
       );
     }
     return projectSections.includes(sectionKey);
@@ -155,6 +169,14 @@ export const initialiseMenuCategoriesForSidebar = (
         key: "analyse",
         label: "Analyse",
         icon: <RiBookReadLine style={{ fontSize: "large" }} />,
+        children: [],
+      };
+    }
+    if (isSectionEnabled("specification")) {
+      categories.specification = {
+        key: "specification",
+        label: "Software Specification",
+        icon: <RiFileList3Line style={{ fontSize: "large" }} />,
         children: [],
       };
     }
